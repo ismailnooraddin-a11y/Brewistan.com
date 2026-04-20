@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --paper: #FAFAF9;
+  --ink: #1C1917;
+}
+
+html, body {
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+@layer base {
+  body {
+    @apply font-sans;
+    font-feature-settings: "cv11", "ss01", "ss03";
+  }
+  h1, h2, h3, h4 {
+    @apply tracking-tight;
+  }
+}
+
+@layer components {
+  .container-pad {
+    @apply mx-auto w-full max-w-6xl px-6;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-full bg-brand px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-full border border-line bg-white px-5 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-paper-tint;
+  }
+  .field-label {
+    @apply mb-1.5 block text-[13px] font-medium text-ink-soft;
+  }
+  .field-input {
+    @apply block w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-[15px] text-ink placeholder:text-ink-faint outline-none transition-colors focus:border-ink-muted focus:ring-2 focus:ring-ink/5;
+  }
+  .card {
+    @apply rounded-2xl border border-line bg-white p-7 shadow-card;
+  }
+  .link {
+    @apply text-ink underline decoration-line underline-offset-4 transition-colors hover:decoration-ink-muted;
+  }
+}
+
+::selection {
+  background: #1C1917;
+  color: #FAFAF9;
+}
