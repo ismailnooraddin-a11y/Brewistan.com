@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Header from "@/components/Header";
 
@@ -20,9 +21,17 @@ export default async function DashboardPage() {
 
   const { data: cafe } = await supabase
     .from("cafes")
-    .select("name, city")
+    .select("id, name, city")
     .eq("merchant_id", user.id)
     .maybeSingle();
+
+  const { data: reward } = cafe
+    ? await supabase
+        .from("rewards")
+        .select("stamps_required, reward_text, is_active, configured_at")
+        .eq("cafe_id", cafe.id)
+        .maybeSingle()
+    : { data: null };
 
   const firstName =
     (merchant?.full_name ?? user.user_metadata?.full_name ?? "")
@@ -33,6 +42,8 @@ export default async function DashboardPage() {
     cafe?.name ?? user.user_metadata?.cafe_name ?? "Your café";
 
   const cafeCity = cafe?.city ?? user.user_metadata?.city ?? "";
+
+  const rewardConfigured = Boolean(reward?.configured_at);
 
   return (
     <div className="min-h-screen">
@@ -51,7 +62,9 @@ export default async function DashboardPage() {
               </span>
             </h1>
             <p className="mt-3 text-[16px] text-ink-soft">
-              Your account is ready. Next up: set up your loyalty program.
+              {rewardConfigured
+                ? "Your reward is live. Next up: launch your QR code."
+                : "Your account is ready. Next up: set up your loyalty program."}
             </p>
           </div>
 
@@ -75,6 +88,40 @@ export default async function DashboardPage() {
             </div>
           </div>
 
+          {/* Reward summary (shown only after configuration) */}
+          {rewardConfigured && reward && (
+            <div className="mt-10 animate-fade-up rounded-2xl border border-ember/30 bg-ember/5 p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.14em] text-ember">
+                    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12 l4 4 l10 -10" />
+                    </svg>
+                    Reward live
+                  </p>
+                  <p className="mt-2 text-[17px] font-medium text-ink">
+                    Buy{" "}
+                    <span className="display-serif text-ember">
+                      {reward.stamps_required}
+                    </span>
+                    , get {reward.reward_text.toLowerCase()}
+                  </p>
+                  <p className="mt-1 text-[13px] text-ink-soft">
+                    {reward.is_active
+                      ? "Active — customers can earn stamps."
+                      : "Paused — resume anytime."}
+                  </p>
+                </div>
+                <Link
+                  href="/dashboard/reward"
+                  className="btn-secondary !py-2 !px-4 !text-[13px]"
+                >
+                  Edit
+                </Link>
+              </div>
+            </div>
+          )}
+
           {/* Next steps */}
           <div className="mt-14">
             <div className="mb-6 flex items-end justify-between">
@@ -83,7 +130,7 @@ export default async function DashboardPage() {
                 <span className="display-serif text-ember">next</span>
               </h2>
               <p className="text-[13px] text-ink-muted">
-                3 steps to launch
+                {rewardConfigured ? "1 of 3 complete" : "3 steps to launch"}
               </p>
             </div>
 
@@ -93,7 +140,9 @@ export default async function DashboardPage() {
                   n="01"
                   title="Design your reward"
                   body="Pick how many stamps earn a free coffee, and what the reward is."
-                  status="Coming soon"
+                  status={rewardConfigured ? "Completed" : "Active"}
+                  completed={rewardConfigured}
+                  href="/dashboard/reward"
                 />
               </div>
               <div className="stagger-child">
@@ -186,23 +235,55 @@ function StepRow({
   title,
   body,
   status,
+  completed = false,
+  href,
 }: {
   n: string;
   title: string;
   body: string;
   status: string;
+  completed?: boolean;
+  href?: string;
 }) {
-  return (
-    <div className="group flex items-start gap-5 rounded-2xl border border-line bg-paper-card p-5 transition-all duration-300 ease-enter hover:border-line-strong hover:shadow-soft">
-      <div className="display-serif pt-0.5 text-[28px] leading-none text-ember/50 transition-colors duration-200 group-hover:text-ember">
-        {n}
+  const inner = (
+    <div
+      className={`group flex items-start gap-5 rounded-2xl border p-5 transition-all duration-300 ease-enter ${
+        href
+          ? "cursor-pointer border-line bg-paper-card hover:-translate-y-0.5 hover:border-ember/50 hover:shadow-lift"
+          : "border-line bg-paper-card"
+      }`}
+    >
+      <div
+        className={`pt-0.5 transition-colors duration-200 ${
+          completed
+            ? ""
+            : "display-serif text-[28px] leading-none text-ember/50 group-hover:text-ember"
+        }`}
+      >
+        {completed ? (
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-ember text-paper">
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12 l4 4 l10 -10" />
+            </svg>
+          </span>
+        ) : (
+          n
+        )}
       </div>
       <div className="flex-1">
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-[15px] font-semibold tracking-tight text-ink">
             {title}
           </h3>
-          <span className="shrink-0 rounded-full border border-line bg-paper-tint px-2.5 py-0.5 text-[11px] font-medium text-ink-muted">
+          <span
+            className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
+              completed
+                ? "border border-ember/30 bg-ember/10 text-ember"
+                : status === "Active"
+                ? "border border-ember bg-ember text-paper"
+                : "border border-line bg-paper-tint text-ink-muted"
+            }`}
+          >
             {status}
           </span>
         </div>
@@ -210,8 +291,21 @@ function StepRow({
           {body}
         </p>
       </div>
+      {href && (
+        <span
+          aria-hidden
+          className="mt-1 text-ink-faint transition-all duration-200 ease-enter group-hover:translate-x-0.5 group-hover:text-ember"
+        >
+          →
+        </span>
+      )}
     </div>
   );
+
+  if (href) {
+    return <Link href={href}>{inner}</Link>;
+  }
+  return inner;
 }
 
 function IconStore() {
