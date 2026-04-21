@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import StampCard from "@/components/StampCard";
 import Marquee from "@/components/Marquee";
 import Reveal from "@/components/Reveal";
+import PhoneMockup from "@/components/PhoneMockup";
 
 export default function HomePage() {
   return (
@@ -76,7 +77,9 @@ export default function HomePage() {
 
           {/* Right: stamp card illustration */}
           <div className="stagger-child flex justify-center md:justify-end">
-            <StampCard />
+            <PhoneMockup>
+<StampCard />
+</PhoneMockup>
           </div>
         </div>
       </section>
