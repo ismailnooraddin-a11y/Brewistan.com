@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Brewistan — Loyalty, beautifully brewed.</title>
+    <meta
+      name="description"
+      content="Brewistan is a modern loyalty platform for cafés in Iraq — elegant, mobile-first, and built to turn visits into returning customers."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-bg"></div>
+    <header class="site-header">
+      <div class="container nav-row">
+        <a href="#" class="brand">
+          <span class="brand-mark">B</span>
+          <span class="brand-text">Brewistan</span>
+        </a>
+
+        <nav class="desktop-nav">
+          <a href="#features">Features</a>
+          <a href="#how-it-works">How it works</a>
+          <a href="#models">Loyalty models</a>
+          <a href="#contact">Contact</a>
+        </nav>
+
+        <div class="nav-actions">
+          <a href="#" class="link-btn">Cafe Login</a>
+          <a href="#contact" class="primary-btn small">Book a Demo</a>
+        </div>
+
+        <button class="menu-toggle" aria-label="Open menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+
+      <div class="mobile-menu">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#models">Loyalty models</a>
+        <a href="#contact">Contact</a>
+        <a href="#" class="link-btn mobile-link">Cafe Login</a>
+        <a href="#contact" class="primary-btn">Book a Demo</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero-section">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <div class="eyebrow">Mobile-first café loyalty for Iraq</div>
+            <h1>Elegant loyalty that brings customers back.</h1>
+            <p class="hero-text">
+              Brewistan helps cafés turn every visit into momentum. Customers scan a QR,
+              collect stamps on mobile, and unlock rewards through a bright, premium web experience.
+            </p>
+
+            <div class="hero-actions">
+              <a href="#contact" class="primary-btn">Start with Brewistan</a>
+              <a href="#models" class="secondary-btn">See loyalty models</a>
+            </div>
+
+            <div class="hero-points">
+              <div class="point-card">
+                <strong>QR-first</strong>
+                <span>Customer scans near the cashier</span>
+              </div>
+              <div class="point-card">
+                <strong>Fast approval</strong>
+                <span>Barista approves from phone</span>
+              </div>
+              <div class="point-card">
+                <strong>Multi-café ready</strong>
+                <span>Built for real expansion</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-visual">
+            <div class="glow glow-one"></div>
+            <div class="glow glow-two"></div>
+
+            <div class="phone-stage">
+              <div class="floating-chip chip-left">Brewistan Card</div>
+              <div class="floating-chip chip-right">Live stamp progress</div>
+
+              <div class="phone-shell">
+                <div class="phone-notch"></div>
+                <div class="phone-screen">
+                  <div class="screen-top">
+                    <div>
+                      <p class="screen-label">Your loyalty cards</p>
+                      <h3>Welcome back</h3>
+                    </div>
+                    <div class="screen-badge">3 Cards</div>
+                  </div>
+
+                  <div class="cards-carousel" id="cards-carousel">
+                    <article class="loyalty-card active card-aurora">
+                      <div class="card-topline">
+                        <span>CAFE</span>
+                        <span>8 STAMPS</span>
+                      </div>
+                      <h4>North Roast</h4>
+                      <p>25% off on your 3rd drink • Free drink on 8</p>
+                      <div class="stamp-row eight">
+                        <span class="filled"></span>
+                        <span class="filled"></span>
+                        <span class="filled"></span>
+                        <span class="filled"></span>
+                        <span class="filled"></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                      <div class="card-footer">
+                        <strong>5 / 8 collected</strong>
+                        <span>Next reward close</span>
+                      </div>
+                    </article>
+
+                    <article class="loyalty-card card-olive">
+                      <div class="card-topline">
+                        <span>CAFE</span>
+                        <span>10 STAMPS</span>
+                      </div>
+                      <h4>Elm & Bean</h4>
+                      <p>25% off on your 5th drink • Free drink on 10</p>
+                      <div class="stamp-row ten">
+                        <span class="filled"></span>
+                        <span class="filled"></span>
+                        <span class="filled"></span>
+                        <span class="filled"></span>
+                        <span class="filled"></span>
+                        <span class="filled"></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                      <div class="card-footer">
+                        <strong>6 / 10 collected</strong>
+                        <span>Midway reward unlocked</span>
+                      </div>
+                    </article>
+
+                    <article class="loyalty-card card-cream">
+                      <div class="card-topline">
+                        <span>CAFE</span>
+                        <span>12 STAMPS</span>
+                      </div>
+                      <h4>Golden Drip</h4>
+                      <p>25% off on your 6th drink • Free drink on 12</p>
+                      <div class="stamp-row twelve">
+                        <span class="filled"></span>
+                        <span class="filled"></span>
+                        <span class="filled"></span>
+                        <span class="filled"></span>
+                        <span class="filled"></span>
+                        <span class="filled"></span>
+                        <span class="filled"></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                      <div class="card-footer">
+                        <strong>7 / 12 collected</strong>
+                        <span>Steady customer journey</span>
+                      </div>
+                    </article>
+                  </div>
+
+                  <div class="carousel-indicators" id="carousel-indicators">
+                    <button class="active" aria-label="Show first card"></button>
+                    <button aria-label="Show second card"></button>
+                    <button aria-label="Show third card"></button>
+                  </div>
+
+                  <div class="mini-panel">
+                    <div>
+                      <span class="mini-title">Today’s action</span>
+                      <strong>Scan near cashier</strong>
+                    </div>
+                    <button class="scan-pill">Request stamp</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-soft" id="features">
+        <div class="container">
+          <div class="section-heading compact">
+            <span class="eyebrow">What makes it work</span>
+            <h2>Designed for cafés. Frictionless for customers.</h2>
+          </div>
+
+          <div class="feature-grid">
+            <article class="feature-card">
+              <div class="icon-circle">01</div>
+              <h3>Bright premium interface</h3>
+              <p>
+                Elegant colors, sharp typography, and a dense layout that feels polished without wasting space.
+              </p>
+            </article>
+            <article class="feature-card">
+              <div class="icon-circle">02</div>
+              <h3>Mobile-first customer flow</h3>
+              <p>
+                Customers join from one QR and instantly view all loyalty cards, progress, and rewards on phone.
+              </p>
+            </article>
+            <article class="feature-card">
+              <div class="icon-circle">03</div>
+              <h3>Simple staff approval</h3>
+              <p>
+                The customer requests a stamp, and the barista approves it from a lightweight staff view on mobile.
+              </p>
+            </article>
+            <article class="feature-card">
+              <div class="icon-circle">04</div>
+              <h3>Café-ready backend</h3>
+              <p>
+                Owners get a cleaner desktop dashboard for campaigns, branches, staff, analytics, and loyalty control.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="how-it-works">
+        <div class="container">
+          <div class="section-heading">
+            <span class="eyebrow">How Brewistan works</span>
+            <h2>A smart flow with almost no friction.</h2>
+          </div>
+
+          <div class="steps-grid">
+            <article class="step-card">
+              <span class="step-number">1</span>
+              <h3>Customer scans the QR</h3>
+              <p>
+                The QR lives near the cashier. One quick scan opens the Brewistan mobile web experience for that café.
+              </p>
+            </article>
+            <article class="step-card">
+              <span class="step-number">2</span>
+              <h3>Account loads or gets created</h3>
+              <p>
+                First-time visitors sign up with name and phone. Returning customers sign in and see their saved cards.
+              </p>
+            </article>
+            <article class="step-card">
+              <span class="step-number">3</span>
+              <h3>Customer requests a stamp</h3>
+              <p>
+                A single tap sends a stamp request tied to the café and branch. The request waits for staff approval.
+              </p>
+            </article>
+            <article class="step-card">
+              <span class="step-number">4</span>
+              <h3>Barista approves from phone</h3>
+              <p>
+                Staff sees pending requests, approves the correct customer, and the loyalty card updates instantly.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-soft" id="models">
+        <div class="container">
+          <div class="section-heading compact">
+            <span class="eyebrow">Loyalty models</span>
+            <h2>Three clean stamp systems cafés can choose from.</h2>
+          </div>
+
+          <div class="model-grid">
+            <article class="model-card">
+              <div class="model-top">
+                <span class="model-badge">8 Stamp Model</span>
+                <strong>Fast repeat visits</strong>
+              </div>
+              <h3>8 drinks</h3>
+              <p>Optional 25% discount on the 3rd drink, then a free drink at 8.</p>
+            </article>
+            <article class="model-card featured">
+              <div class="model-top">
+                <span class="model-badge">10 Stamp Model</span>
+                <strong>Balanced journey</strong>
+              </div>
+              <h3>10 drinks</h3>
+              <p>Optional 25% discount on the 5th drink, then a free drink at 10.</p>
+            </article>
+            <article class="model-card">
+              <div class="model-top">
+                <span class="model-badge">12 Stamp Model</span>
+                <strong>Long-term retention</strong>
+              </div>
+              <h3>12 drinks</h3>
+              <p>Optional 25% discount on the 6th drink, then a free drink at 12.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container showcase-banner">
+          <div>
+            <span class="eyebrow">Brand position</span>
+            <h2>Brewistan feels modern, premium, and made for ambitious cafés.</h2>
+          </div>
+          <p>
+            The design direction uses warm neutrals, polished olive accents, soft gold highlights, and clean typography to stay bright, elegant, and serious.
+          </p>
+        </div>
+      </section>
+
+      <section class="section section-soft" id="contact">
+        <div class="container contact-grid">
+          <div class="contact-copy">
+            <span class="eyebrow">Start with Brewistan</span>
+            <h2>Bring your café loyalty into a sharper era.</h2>
+            <p>
+              Launch with a professional mobile-first experience, a cleaner café dashboard, and loyalty models that actually encourage return visits.
+            </p>
+          </div>
+
+          <form class="contact-card">
+            <div class="field-row">
+              <label>
+                <span>Café name</span>
+                <input type="text" placeholder="North Roast" />
+              </label>
+              <label>
+                <span>City</span>
+                <input type="text" placeholder="Erbil" />
+              </label>
+            </div>
+            <div class="field-row">
+              <label>
+                <span>Full name</span>
+                <input type="text" placeholder="Your name" />
+              </label>
+              <label>
+                <span>Email</span>
+                <input type="email" placeholder="name@cafe.com" />
+              </label>
+            </div>
+            <label>
+              <span>What would you like to launch first?</span>
+              <textarea placeholder="Branches, stamp model, team size, or anything important..."></textarea>
+            </label>
+            <button type="button" class="primary-btn full">Request a Brewistan demo</button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-row">
+        <div>
+          <a href="#" class="brand footer-brand">
+            <span class="brand-mark">B</span>
+            <span class="brand-text">Brewistan</span>
+          </a>
+          <p class="footer-note">Bright loyalty for cafés, designed to feel premium from the first scan.</p>
+        </div>
+        <div class="footer-links">
+          <a href="#features">Features</a>
+          <a href="#how-it-works">How it works</a>
+          <a href="#models">Loyalty models</a>
+        </div>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
