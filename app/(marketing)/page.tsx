@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { ArrowRight, Palette, QrCode, ShieldCheck, Sparkles, UserCheck, Zap } from 'lucide-react';
-import { PhoneMockup } from '@/components/marketing/PhoneMockup';
 
 export default function Home() {
   return (
@@ -56,9 +55,13 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="phone-wrap">
-          <PhoneMockup />
-        </div>
+        <<div className="phone-wrap">
+  <img
+    src="/images/loyalty-card.png"
+    alt="Brewistan loyalty card"
+    className="w-[320px] md:w-[380px] lg:w-[420px] rounded-[40px] shadow-2xl"
+  />
+</div>
       </section>
 
       <section id="features" className="container section">
