@@ -10,7 +10,7 @@ import { slugify, safeRedirect } from '@/lib/utils';
 
 type Tab = 'create' | 'signin';
 
-export default function GetStarted() {
+export function GetStartedForm() {
   const supabase = createClient();
   const router = useRouter();
   const searchParams = useSearchParams();
