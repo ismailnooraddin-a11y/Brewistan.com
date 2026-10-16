@@ -1,0 +1,50 @@
+import 'dart:async';
+import 'dart:io' show Platform;
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
+
+import '../config.dart';
+
+/// Firebase Cloud Messaging, configured from --dart-define values (no google-services files needed).
+class PushService {
+  bool _ready = false;
+  StreamSubscription<String>? _tokenSub;
+  StreamSubscription<RemoteMessage>? _messageSub;
+  StreamSubscription<RemoteMessage>? _openedSub;
+  void dispose() { _tokenSub?.cancel(); _messageSub?.cancel(); _openedSub?.cancel(); _tokenSub = null; }
+  Future<void> removeToken() async { if (_ready) { try { await FirebaseMessaging.instance.deleteToken(); } catch (_) {} } }
+
+  Future<String?> init({void Function(String token)? onTokenRefresh, void Function(Map<String,dynamic>)? onMessage}) async {
+    if (!AppConfig.pushConfigured) return null;
+    try {
+      if (!_ready) {
+        await Firebase.initializeApp(
+          options: FirebaseOptions(
+            apiKey: AppConfig.firebaseApiKey,
+            appId: Platform.isIOS ? AppConfig.firebaseIosAppId : AppConfig.firebaseAndroidAppId,
+            messagingSenderId: AppConfig.firebaseSenderId,
+            projectId: AppConfig.firebaseProjectId,
+          ),
+        );
+        _ready = true;
+
+      }
+      await _tokenSub?.cancel();
+      if (onTokenRefresh != null) _tokenSub = FirebaseMessaging.instance.onTokenRefresh.listen(onTokenRefresh);
+      await _messageSub?.cancel(); await _openedSub?.cancel();
+      if (onMessage != null) {
+        _messageSub = FirebaseMessaging.onMessage.listen((m) => onMessage(Map<String,dynamic>.from(m.data)));
+        _openedSub = FirebaseMessaging.onMessageOpenedApp.listen((m) => onMessage(Map<String,dynamic>.from(m.data)));
+        final initial = await FirebaseMessaging.instance.getInitialMessage();
+        if (initial != null) onMessage(Map<String,dynamic>.from(initial.data));
+      }
+      await FirebaseMessaging.instance.requestPermission();
+      return await FirebaseMessaging.instance.getToken();
+    } catch (e) {
+      debugPrint('Push setup unavailable.');
+      return null;
+    }
+  }
+}

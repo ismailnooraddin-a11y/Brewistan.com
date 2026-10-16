@@ -1,0 +1,42 @@
+# Changelog
+
+## 1.0.1 - final follow-up source revision - 2026-10-16
+
+Adds migrations 06-11; the preceding five migrations are unchanged. Implements live-session RLS and device proof/binding, encrypted sensitive local payloads, immutable billing quotes and entitlement history, complete wallet paging and paged owner/admin lists, transactional staff/admin notices, bounded notification workers and metrics, ownership transfer, device recovery and expiry-aware rendering. Mobile release now requires the exact successful CI baseline. Privacy/terms drafts no longer promise immediate erasure of all retained/provider data.
+
+Executed: 46 Node checks, 11 Python fixtures, eight strict standalone TypeScript modules, source/YAML/shell/locale checks. Full-stack runtimes and live integration remain unverified here. See the root report and `docs/final/TEST_RESULTS.md`; run staging before production.
+
+## Audit hardening candidate - 2026-10-16
+
+This is a source revision requiring staging validation, not a tested production release. See `AUDIT_REPORT.md` for 32 grouped findings and `docs/UPGRADE.md` for coordinated rollout requirements.
+
+### Security and data integrity
+
+- Scope scanner authorization to a verified user, active staff membership, branch and registered device.
+- Sign and verify offline staff evidence; centrally enforce the device/day redemption allowance.
+- Preserve one durable event ID across online timeout and offline retry; serialize duplicate event requests in the database.
+- Bind wallet caches, scanner caches and queued work to the correct account; preserve legacy rows rather than guessing ownership.
+- Pin in-progress puzzles and earned reward labels to the intended campaign version; tighten redemption timing.
+- Replace raw owner activity access with a restricted projection, constrain uploads and strengthen request validation.
+- Add atomic OTP reservation/approval and durable per-device notification jobs.
+- Enforce signed web session timing, hosted phone-verification prerequisites and safer deletion checks.
+
+### Design and workflow
+
+- Separate preview, pending, confirmed and rejected scanner outcomes; keep final rejection reasons for review.
+- Dispose hidden scanner/camera state and relock staff mode after backgrounding.
+- Improve small-screen navigation and QR sizing, visible keyboard focus, form errors, upload recovery and numeral handling.
+- Preserve the existing product appearance; full browser/native visual and accessibility QA remains required.
+
+### Release and verification
+
+- Add migrations 03-05 without changing migrations 01-02.
+- Gate Supabase deployment on the exact successful CI commit; improve secret-file handling and Android signing prerequisites.
+- Generate native scaffolding without overwriting existing platform customizations.
+- Pin web manifest dependencies to the original lockfile resolutions, preserving transitive versions and integrity values.
+- Add 27 executable Node checks, 11 Python SQLite/platform checks and additional database/Flutter regressions.
+- Include audit findings, upgrade instructions, test logs, a review diff and a SHA-256 file manifest.
+
+### Breaking upgrade considerations
+
+Older scan/snapshot and unsigned legacy queue formats receive HTTP 426. Drain queues before rollout, keep device data, and reconcile undrained legacy rows under supervision. Configure `WEB_SESSION_SECRET`, both allowed origins and hosted phone confirmation before reopening the service. Full-stack integration suites and real-device QA were not executable in the audit environment.

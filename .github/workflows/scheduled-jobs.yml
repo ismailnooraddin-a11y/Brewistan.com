@@ -1,0 +1,30 @@
+name: Scheduled jobs
+
+# Four leased workers every 5 minutes: send due push campaigns, reward reminders, and expire rewards.
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  push-dispatch:
+    # Opt-in. Four jobs every five minutes use far more than GitHub's free private-repo minutes
+    # and would block CI and deploys. By default an external scheduler calls the function
+    # instead (see GO_LIVE_GUIDE). Set the repository variable ENABLE_GITHUB_SCHEDULE=true to use this.
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.ENABLE_GITHUB_SCHEDULE == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    strategy:
+      fail-fast: false
+      matrix:
+        worker: [1, 2, 3, 4]
+    steps:
+      - name: Run push-dispatch
+        env:
+          PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -eu
+          if [ -z "$PROJECT_REF" ] || [ -z "$CRON_SECRET" ]; then echo "Required scheduled-job secrets are missing."; exit 1; fi
+          curl --max-time 110 --retry 1 --retry-delay 2 -fsS -X POST "https://${PROJECT_REF}.supabase.co/functions/v1/push-dispatch" \
+            -H "x-cron-secret: ${CRON_SECRET}" -H "Content-Type: application/json" -d '{}'

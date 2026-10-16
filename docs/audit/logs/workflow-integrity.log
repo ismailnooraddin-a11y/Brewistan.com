@@ -1,0 +1,10 @@
+PASS YAML and run-script syntax: .github/workflows/ci.yml
+PASS YAML and run-script syntax: .github/workflows/deploy-supabase.yml
+PASS YAML and run-script syntax: .github/workflows/mobile-release.yml
+PASS YAML and run-script syntax: .github/workflows/scheduled-jobs.yml
+PASS shell syntax: scripts/setup-mobile.sh
+PASS 4 workflow YAML files, 22 embedded shell blocks, 6 JavaScript modules.
+PASS all original transitive web lockfile entries and integrity values unchanged.
+PASS original migration unchanged: 20261016000001_core.sql
+PASS original migration unchanged: 20261016000002_storage_cron.sql
+PASS original upload SHA-256 unchanged: 11aa931e7e943d6a5286a558ca83330084ced6b8baa7dcf1a51825add7fe9144

@@ -1,0 +1,45 @@
+// Executed dependency-free source/helper regressions. Not an application build or database engine.
+import test from 'node:test';import assert from 'node:assert/strict';
+import fs from 'node:fs';import path from 'node:path';import os from 'node:os';
+import {createRequire} from 'node:module';import {fileURLToPath,pathToFileURL} from 'node:url';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),require=createRequire(import.meta.url);
+const ts=require(process.env.TYPESCRIPT_PATH||require.resolve('typescript',{paths:[path.join(root,'apps/web')]}));
+const temp=fs.mkdtempSync(path.join(os.tmpdir(),'brewistan-final-'));process.on('exit',()=>fs.rmSync(temp,{recursive:true,force:true}));
+const read=f=>fs.readFileSync(path.join(root,f),'utf8');
+async function load(file){const target=path.join(temp,path.basename(file).replace(/\.ts$/,'.mjs'));
+ fs.writeFileSync(target,ts.transpileModule(read(file),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText);
+ return import(pathToFileURL(target));}
+const {drainQueue}=await load('supabase/functions/_shared/worker.ts');
+const pages=await load('apps/web/lib/pagination.ts'),proof=await load('supabase/functions/_shared/device-proof.ts');
+const validation=await load('apps/web/lib/validation.ts');
+test('worker stops immediately at an empty queue',async()=>{let calls=0;assert.deepEqual(await drainQueue({deadlineMs:999999,now:()=>0,claim:async()=>{calls++;return[];},handle:async()=>{throw Error();}}),{claimed:0,processed:0,errors:0});assert.equal(calls,1);});
+test('worker drains successive batches without losing items',async()=>{let queue=Array.from({length:43},(_,i)=>i),seen=[];
+ const r=await drainQueue({deadlineMs:999999,now:()=>0,batchSize:10,claim:async n=>queue.splice(0,n),handle:async x=>{seen.push(x);}});
+ assert.equal(r.processed,43);assert.equal(new Set(seen).size,43);});
+test('worker honors a job cap without claiming unhandled work',async()=>{const q=Array.from({length:100},(_,i)=>i);
+ const r=await drainQueue({deadlineMs:999999,now:()=>0,maxJobs:23,batchSize:10,claim:async n=>q.splice(0,n),handle:async()=>{}});assert.equal(r.claimed,23);assert.equal(q.length,77);});
+test('worker leaves safety headroom before its deadline',async()=>{let called=false;
+ await drainQueue({deadlineMs:18000,now:()=>0,claim:async()=>{called=true;return[];},handle:async()=>{}});assert.equal(called,false);});
+test('worker contains per-job failures while preserving other acknowledgements',async()=>{let once=false;
+ const r=await drainQueue({deadlineMs:999999,now:()=>0,claim:async()=>{if(once)return[];once=true;return[1,2,3];},handle:async x=>{if(x===2)throw Error('ack failure');}});assert.deepEqual(r,{claimed:3,processed:2,errors:1});});
+test('worker fails on a claim/database error rather than reporting an empty queue',async()=>{await assert.rejects(drainQueue({deadlineMs:999999,now:()=>0,claim:async()=>{throw Error('database');},handle:async()=>{}}),/database/);});
+test('worker bounds concurrent provider operations',async()=>{let active=0,peak=0,q=[1,2,3,4,5,6,7];
+ await drainQueue({deadlineMs:999999,now:()=>0,batchSize:3,claim:async n=>q.splice(0,n),handle:async()=>{active++;peak=Math.max(peak,active);await new Promise(r=>setTimeout(r,2));active--;}});assert.equal(peak,3);});
+test('page numbers reject malformed and excessive values',()=>{for(const bad of [undefined,'0','-1','1.5','NaN','999999999','1e3','2x'])assert.equal(pages.pageNumber(bad),1);assert.equal(pages.pageNumber('2'),2);assert.equal(pages.pageNumber('100000'),100000);});
+test('search pagination encodes input as data, not URL control syntax',()=>{const href=pages.pageHref('/dashboard/customers',2,'A & B?x=#');const u=new URL(href,'https://example.test');assert.equal(u.searchParams.get('q'),'A & B?x=#');assert.equal(u.searchParams.get('page'),'2');assert.equal(u.hash,'');});
+test('device-registration messages normalize absent optional fields',()=>{const c={userId:'u',sessionId:'s',publicKey:'k',platform:'android',proofAt:123};assert.equal(proof.registrationMessage(c),'["BW-REGISTER-1","u","s","k","android",null,null,123]');assert.equal(proof.registrationMessage(c),proof.registrationMessage({...c,deviceId:null,pushToken:null}));});
+test('registration timestamps have strict integer and two-minute boundaries',()=>{for(const t of [0,120000,-120000])assert.equal(proof.registrationTimeValid(t,0),true);for(const t of [120001,-120001,0.1,'0',null,NaN,Infinity])assert.equal(proof.registrationTimeValid(t,0),false);});
+test('Ed25519 proof binds every registration context field',async()=>{const keys=await crypto.subtle.generateKey('Ed25519',true,['sign','verify']);
+ const c={userId:'u',sessionId:'s',publicKey:'k',platform:'android',deviceId:'d',pushToken:'token',proofAt:123};const te=new TextEncoder();
+ const sig=await crypto.subtle.sign('Ed25519',keys.privateKey,te.encode(proof.registrationMessage(c)));
+ assert.equal(await crypto.subtle.verify('Ed25519',keys.publicKey,sig,te.encode(proof.registrationMessage(c))),true);
+ for(const field of Object.keys(c)){const altered={...c,[field]:field==='proofAt'?124:c[field]+'x'};assert.equal(await crypto.subtle.verify('Ed25519',keys.publicKey,sig,te.encode(proof.registrationMessage(altered))),false,field);}});
+test('browser scheduling matches the database ten-minute lead rule',()=>{const saved=Date.now;Date.now=()=>Date.parse('2026-10-16T09:00:00+03:00');try{assert.throws(()=>validation.baghdadToIso('2026-10-16T09:09'),/ten minutes/);assert.equal(validation.baghdadToIso('2026-10-16T09:10'),'2026-10-16T06:10:00.000Z');}finally{Date.now=saved;}});
+function files(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(x=>x.isDirectory()?['node_modules','.next','.git','build'].includes(x.name)?[]:files(path.join(dir,x.name)):[path.join(dir,x.name)]);}
+test('all @/ web imports resolve',()=>{for(const f of files(path.join(root,'apps/web')).filter(f=>/\.tsx?$/.test(f))){for(const m of fs.readFileSync(f,'utf8').matchAll(/from\s+['"](@\/[^'"]+)['"]/g)){const target=path.join(root,'apps/web',m[1].slice(2));assert.ok([target,target+'.ts',target+'.tsx',path.join(target,'index.ts')].some(x=>fs.existsSync(x)),f+': '+m[1]);}}});
+test('all relative Dart imports resolve',()=>{for(const f of files(path.join(root,'apps/mobile')).filter(f=>f.endsWith('.dart'))){for(const m of fs.readFileSync(f,'utf8').matchAll(/import\s+['"]([^'"]+)['"]/g)){if(m[1].includes(':'))continue;assert.ok(fs.existsSync(path.resolve(path.dirname(f),m[1])),f+': '+m[1]);}}});
+test('migration RPC names match every literal application RPC call',()=>{const sql=files(path.join(root,'supabase/migrations')).map(x=>fs.readFileSync(x,'utf8')).join('\n');const names=new Set([...sql.matchAll(/create\s+(?:or replace\s+)?function\s+public\.(\w+)/gi)].map(m=>m[1]));
+ for(const f of [...files(path.join(root,'apps')), ...files(path.join(root,'supabase/functions'))].filter(f=>/\.(tsx?|dart)$/.test(f))){for(const m of fs.readFileSync(f,'utf8').matchAll(/\.rpc\(\s*['"]([^'"]+)['"]/g))assert.ok(names.has(m[1]),f+': '+m[1]);}});
+test('source invariant: session gates fail closed for missing MFA and revoked sessions',()=>{const sql=read('supabase/migrations/20261016000006_session_security.sql');assert.match(sql,/coalesce\(auth\.jwt\(\)->>'aal','aal1'\)='aal2'/);assert.match(sql,/as restrictive for all to authenticated/);assert.match(sql,/session_revoked/);});
+test('source invariant: timeout reconciliation looks up a committed event before rejecting its age',()=>{const s=read('supabase/functions/_shared/scan.ts');assert.ok(s.indexOf('if (existing) return')<s.indexOf("'scan_too_old'"));assert.doesNotMatch(read('supabase/functions/sync-upload/index.ts'),/at < now/);});
+test('source invariant: queued QR encryption is account- and event-bound',()=>{const s=read('apps/mobile/lib/services/local_db.dart');assert.match(s,/local_key_unavailable/);assert.match(s,/_cipher\.seal\(qr, _queueContext/);assert.match(s,/\['queue', row\['event_id'\], row\['staff_id'\], column\]/);assert.match(s,/NOT IN \(SELECT event_id FROM queue\)/);});

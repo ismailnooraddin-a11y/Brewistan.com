@@ -1,0 +1,287 @@
+TAP version 13
+# Syntax-only check: 83 TS/TSX files; compiler 5.8.3
+# Subtest: all TypeScript/TSX sources parse, without claiming semantic compilation
+ok 1 - all TypeScript/TSX sources parse, without claiming semantic compilation
+  ---
+  duration_ms: 100.449872
+  type: 'test'
+  ...
+# Subtest: relative TS imports resolve to existing project files
+ok 2 - relative TS imports resolve to existing project files
+  ---
+  duration_ms: 44.578697
+  type: 'test'
+  ...
+# Subtest: Ed25519 seed derives the RFC 8032 known public key
+ok 3 - Ed25519 seed derives the RFC 8032 known public key
+  ---
+  duration_ms: 3.378857
+  type: 'test'
+  ...
+# Subtest: Ed25519 verifies RFC 8032 empty-message signature and rejects tampering
+ok 4 - Ed25519 verifies RFC 8032 empty-message signature and rejects tampering
+  ---
+  duration_ms: 7.84586
+  type: 'test'
+  ...
+# Subtest: signed platform tokens round-trip and reject malformed/tampered/oversized input
+ok 5 - signed platform tokens round-trip and reject malformed/tampered/oversized input
+  ---
+  duration_ms: 6.04317
+  type: 'test'
+  ...
+# Subtest: base64url binary round-trip; malformed input rejected
+ok 6 - base64url binary round-trip; malformed input rejected
+  ---
+  duration_ms: 0.439509
+  type: 'test'
+  ...
+# Subtest: valid customer QR verifies with no voucher
+ok 7 - valid customer QR verifies with no voucher
+  ---
+  duration_ms: 2.445209
+  type: 'test'
+  ...
+# Subtest: adjacent QR windows accepted, old and future windows rejected
+ok 8 - adjacent QR windows accepted, old and future windows rejected
+  ---
+  duration_ms: 5.240555
+  type: 'test'
+  ...
+# Subtest: certificate expiry is exclusive at the exact second
+ok 9 - certificate expiry is exclusive at the exact second
+  ---
+  duration_ms: 1.880305
+  type: 'test'
+  ...
+# Subtest: QR signature and format reject tampering and over-limit data
+ok 10 - QR signature and format reject tampering and over-limit data
+  ---
+  duration_ms: 1.41564
+  type: 'test'
+  ...
+# Subtest: voucher accepted only for matching customer, correct tag, and future expiry
+ok 11 - voucher accepted only for matching customer, correct tag, and future expiry
+  ---
+  duration_ms: 7.331481
+  type: 'test'
+  ...
+# Subtest: OTP digit generation validates lengths and produces fixed-length digits
+ok 12 - OTP digit generation validates lengths and produces fixed-length digits
+  ---
+  duration_ms: 0.52183
+  type: 'test'
+  ...
+# Subtest: SHA-256 known vector
+ok 13 - SHA-256 known vector
+  ---
+  duration_ms: 0.721164
+  type: 'test'
+  ...
+# Subtest: CORS allows both dashboards and native clients; rejects other origins
+ok 14 - CORS allows both dashboards and native clients; rejects other origins
+  ---
+  duration_ms: 13.414659
+  type: 'test'
+  ...
+# Subtest: HTTP wrapper supports POST/preflight and never mutates on GET
+ok 15 - HTTP wrapper supports POST/preflight and never mutates on GET
+  ---
+  duration_ms: 1.840056
+  type: 'test'
+  ...
+# Subtest: JSON accepts objects, rejects invalid, null, arrays and wrong media types
+ok 16 - JSON accepts objects, rejects invalid, null, arrays and wrong media types
+  ---
+  duration_ms: 3.368351
+  type: 'test'
+  ...
+# Subtest: body limits enforced with and without Content-Length
+ok 17 - body limits enforced with and without Content-Length
+  ---
+  duration_ms: 1.986893
+  type: 'test'
+  ...
+# Subtest: UUID validation normalizes valid IDs and rejects ambiguous values
+ok 18 - UUID validation normalizes valid IDs and rejects ambiguous values
+  ---
+  duration_ms: 0.295757
+  type: 'test'
+  ...
+# Subtest: Arabic and Persian digits normalize in web and server
+ok 19 - Arabic and Persian digits normalize in web and server
+  ---
+  duration_ms: 0.210721
+  type: 'test'
+  ...
+# Subtest: Baghdad schedule converts 09:00 and 20:59; rejects rollover dates/window/past
+ok 20 - Baghdad schedule converts 09:00 and 20:59; rejects rollover dates/window/past
+  ---
+  duration_ms: 0.571454
+  type: 'test'
+  ...
+# Subtest: contrast ratio handles canonical black/white and invalid hex
+ok 21 - contrast ratio handles canonical black/white and invalid hex
+  ---
+  duration_ms: 0.20365
+  type: 'test'
+  ...
+# Subtest: signed session envelope can be refreshed within bounds
+ok 22 - signed session envelope can be refreshed within bounds
+  ---
+  duration_ms: 5.809224
+  type: 'test'
+  ...
+# Subtest: cookie removal, tampering, and cross-account replay cannot restart an older session
+ok 23 - cookie removal, tampering, and cross-account replay cannot restart an older session
+  ---
+  duration_ms: 1.20572
+  type: 'test'
+  ...
+# Subtest: absolute and idle expiry are exclusive; future timestamps and weak secrets rejected
+ok 24 - absolute and idle expiry are exclusive; future timestamps and weak secrets rejected
+  ---
+  duration_ms: 0.928921
+  type: 'test'
+  ...
+# Subtest: verified auth context uses primary AMR, not refresh/MFA/iat
+ok 25 - verified auth context uses primary AMR, not refresh/MFA/iat
+  ---
+  duration_ms: 0.346371
+  type: 'test'
+  ...
+# Subtest: manifest pins match lockfile resolved artifacts
+ok 26 - manifest pins match lockfile resolved artifacts
+  ---
+  duration_ms: 1.148375
+  type: 'test'
+  ...
+# Subtest: legacy queue requests fail as a whole so old clients cannot delete individual scans
+ok 27 - legacy queue requests fail as a whole so old clients cannot delete individual scans
+  ---
+  duration_ms: 0.320673
+  type: 'test'
+  ...
+# Subtest: worker stops immediately at an empty queue
+ok 28 - worker stops immediately at an empty queue
+  ---
+  duration_ms: 1.362491
+  type: 'test'
+  ...
+# Subtest: worker drains successive batches without losing items
+ok 29 - worker drains successive batches without losing items
+  ---
+  duration_ms: 0.549311
+  type: 'test'
+  ...
+# Subtest: worker honors a job cap without claiming unhandled work
+ok 30 - worker honors a job cap without claiming unhandled work
+  ---
+  duration_ms: 0.254466
+  type: 'test'
+  ...
+# Subtest: worker leaves safety headroom before its deadline
+ok 31 - worker leaves safety headroom before its deadline
+  ---
+  duration_ms: 0.137082
+  type: 'test'
+  ...
+# Subtest: worker contains per-job failures while preserving other acknowledgements
+ok 32 - worker contains per-job failures while preserving other acknowledgements
+  ---
+  duration_ms: 0.277079
+  type: 'test'
+  ...
+# Subtest: worker fails on a claim/database error rather than reporting an empty queue
+ok 33 - worker fails on a claim/database error rather than reporting an empty queue
+  ---
+  duration_ms: 0.407592
+  type: 'test'
+  ...
+# Subtest: worker bounds concurrent provider operations
+ok 34 - worker bounds concurrent provider operations
+  ---
+  duration_ms: 8.830063
+  type: 'test'
+  ...
+# Subtest: page numbers reject malformed and excessive values
+ok 35 - page numbers reject malformed and excessive values
+  ---
+  duration_ms: 0.245752
+  type: 'test'
+  ...
+# Subtest: search pagination encodes input as data, not URL control syntax
+ok 36 - search pagination encodes input as data, not URL control syntax
+  ---
+  duration_ms: 0.563021
+  type: 'test'
+  ...
+# Subtest: device-registration messages normalize absent optional fields
+ok 37 - device-registration messages normalize absent optional fields
+  ---
+  duration_ms: 0.391738
+  type: 'test'
+  ...
+# Subtest: registration timestamps have strict integer and two-minute boundaries
+ok 38 - registration timestamps have strict integer and two-minute boundaries
+  ---
+  duration_ms: 0.258451
+  type: 'test'
+  ...
+# Subtest: Ed25519 proof binds every registration context field
+ok 39 - Ed25519 proof binds every registration context field
+  ---
+  duration_ms: 8.373539
+  type: 'test'
+  ...
+# Subtest: browser scheduling matches the database ten-minute lead rule
+ok 40 - browser scheduling matches the database ten-minute lead rule
+  ---
+  duration_ms: 0.805148
+  type: 'test'
+  ...
+# Subtest: all @/ web imports resolve
+ok 41 - all @/ web imports resolve
+  ---
+  duration_ms: 3.614876
+  type: 'test'
+  ...
+# Subtest: all relative Dart imports resolve
+ok 42 - all relative Dart imports resolve
+  ---
+  duration_ms: 1.671427
+  type: 'test'
+  ...
+# Subtest: migration RPC names match every literal application RPC call
+ok 43 - migration RPC names match every literal application RPC call
+  ---
+  duration_ms: 2.850417
+  type: 'test'
+  ...
+# Subtest: source invariant: session gates fail closed for missing MFA and revoked sessions
+ok 44 - source invariant: session gates fail closed for missing MFA and revoked sessions
+  ---
+  duration_ms: 0.248978
+  type: 'test'
+  ...
+# Subtest: source invariant: timeout reconciliation looks up a committed event before rejecting its age
+ok 45 - source invariant: timeout reconciliation looks up a committed event before rejecting its age
+  ---
+  duration_ms: 0.145455
+  type: 'test'
+  ...
+# Subtest: source invariant: queued QR encryption is account- and event-bound
+ok 46 - source invariant: queued QR encryption is account- and event-bound
+  ---
+  duration_ms: 0.105566
+  type: 'test'
+  ...
+1..46
+# tests 46
+# suites 0
+# pass 46
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 591.314603

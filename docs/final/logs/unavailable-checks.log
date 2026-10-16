@@ -1,0 +1,56 @@
+$ node --version
+v22.16.0
+
+$ npm --version
+10.9.2
+
+$ python3 --version
+Python 3.13.5
+
+flutter: NOT INSTALLED
+dart: NOT INSTALLED
+deno: NOT INSTALLED
+supabase: NOT INSTALLED
+psql: NOT INSTALLED
+postgres: NOT INSTALLED
+docker: NOT INSTALLED
+
+$ npm test --prefix supabase/tests
+exit=1
+
+> test
+> node run.mjs
+
+node:internal/modules/package_json_reader:256
+  throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base), null);
+        ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@electric-sql/pglite' imported from /mnt/data/final_work/brewistan/supabase/tests/run.mjs
+    at Object.getPackageJSONURL (node:internal/modules/package_json_reader:256:9)
+    at packageResolve (node:internal/modules/esm/resolve:768:81)
+    at moduleResolve (node:internal/modules/esm/resolve:854:18)
+    at defaultResolve (node:internal/modules/esm/resolve:984:11)
+    at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:780:12)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:704:25)
+    at ModuleLoader.resolve (node:internal/modules/esm/loader:687:38)
+    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:305:38)
+    at ModuleJob._link (node:internal/modules/esm/module_job:137:49) {
+  code: 'ERR_MODULE_NOT_FOUND'
+}
+
+Node.js v22.16.0
+
+
+$ npm run build --prefix apps/web
+exit=127
+
+> brewistan-web@1.0.1 build
+> next build
+
+sh: 1: next: not found
+
+
+$ bash scripts/verify-all.sh
+exit=2
+Required tool missing: deno
+

@@ -1,0 +1,7 @@
+4 workflow YAML files parsed; 28 embedded shell blocks pass bash -n.
+9 JavaScript modules pass node --check.
+All JSON files parse.
+en: 82 UI keys
+ar: 82 UI keys
+ckb: 82 UI keys
+English/Arabic/Sorani UI key parity and literal AppState.t() references pass; no native copy review claimed.

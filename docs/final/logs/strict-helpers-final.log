@@ -1,0 +1,10 @@
+8 dependency-free modules passed strict semantic type-checking (TypeScript 5.8.3).
+supabase/functions/_shared/http.ts
+supabase/functions/_shared/crypto.ts
+supabase/functions/_shared/validation.ts
+supabase/functions/_shared/worker.ts
+supabase/functions/_shared/device-proof.ts
+apps/web/lib/validation.ts
+apps/web/lib/session-policy.ts
+apps/web/lib/pagination.ts
+A Deno.env declaration was supplied; this is not a full Edge or Next.js build.

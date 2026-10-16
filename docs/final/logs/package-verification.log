@@ -1,0 +1,8 @@
+Input ZIP CRC checks passed.
+Original migrations 01-02 unchanged; reviewed migrations 01-05 unchanged.
+11 ordered migrations present.
+Web lockfile transitive package entries unchanged.
+Patch applies to reviewed input and reproduces all 93 covered text paths.
+Changed binary paths outside patch: [].
+No font binaries, real environment files, keystores, dependency directories or symlinks included.
+Final ZIP CRC and manifest verification performed after packaging; those outputs cannot be embedded without changing the ZIP.

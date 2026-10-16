@@ -1,0 +1,87 @@
+name: Deploy Supabase
+
+# Applies database migrations, deploys every Edge Function and syncs function secrets.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: deploy-supabase-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    environment: production
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      # Referenced by supabase/config.toml; must exist when the CLI reads the config.
+      SEND_SMS_HOOK_SECRET: ${{ secrets.SEND_SMS_HOOK_SECRET }}
+      PLATFORM_SIGNING_SEED: ${{ secrets.PLATFORM_SIGNING_SEED }}
+      OTP_HASH_PEPPER: ${{ secrets.OTP_HASH_PEPPER }}
+      CRON_SECRET: ${{ secrets.CRON_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Check required secrets
+        run: |
+          for s in SUPABASE_ACCESS_TOKEN SUPABASE_DB_PASSWORD PROJECT_REF SEND_SMS_HOOK_SECRET PLATFORM_SIGNING_SEED OTP_HASH_PEPPER CRON_SECRET; do
+            if [ -z "${!s}" ]; then echo "::error::GitHub secret for $s is missing. See README > Go-live checklist."; exit 1; fi
+          done
+          [ "${#OTP_HASH_PEPPER}" -ge 32 ] || { echo "::error::OTP_HASH_PEPPER must contain at least 32 characters."; exit 1; }
+          [ "${#CRON_SECRET}" -ge 32 ] || { echo "::error::CRON_SECRET must contain at least 32 characters."; exit 1; }
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link project
+        run: supabase link --project-ref "$PROJECT_REF" -p "$SUPABASE_DB_PASSWORD"
+
+      - name: Apply migrations
+        run: supabase db push -p "$SUPABASE_DB_PASSWORD"
+
+      - name: Set function secrets
+        env:
+          PLATFORM_SIGNING_SEED: ${{ secrets.PLATFORM_SIGNING_SEED }}
+          SEND_SMS_HOOK_SECRET: ${{ secrets.SEND_SMS_HOOK_SECRET }}
+          WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
+          WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.WHATSAPP_PHONE_NUMBER_ID }}
+          WA_TEMPLATE_LANGS: ${{ secrets.WA_TEMPLATE_LANGS }}
+          FCM_SERVICE_ACCOUNT_JSON: ${{ secrets.FCM_SERVICE_ACCOUNT_JSON }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          OTP_HASH_PEPPER: ${{ secrets.OTP_HASH_PEPPER }}
+          OTP_DAILY_CAP: ${{ vars.OTP_DAILY_CAP }}
+          APP_DOWNLOAD_URL: ${{ vars.APP_DOWNLOAD_URL }}
+          DASHBOARD_URL: ${{ vars.DASHBOARD_URL }}
+          ALLOWED_ORIGINS: ${{ vars.ALLOWED_ORIGINS }}
+          APP_ENV: production
+          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_FROM: ${{ secrets.TWILIO_FROM }}
+        run: |
+          umask 077
+          SECRET_FILE="$(mktemp)"
+          trap 'rm -f "$SECRET_FILE"' EXIT
+          : > "$SECRET_FILE"
+          for k in PLATFORM_SIGNING_SEED SEND_SMS_HOOK_SECRET WHATSAPP_TOKEN WHATSAPP_PHONE_NUMBER_ID WA_TEMPLATE_LANGS \
+                   FCM_SERVICE_ACCOUNT_JSON CRON_SECRET OTP_HASH_PEPPER OTP_DAILY_CAP APP_DOWNLOAD_URL DASHBOARD_URL \
+                   ALLOWED_ORIGINS APP_ENV TWILIO_ACCOUNT_SID TWILIO_AUTH_TOKEN TWILIO_FROM; do
+            v="${!k}"
+            if [ -n "$v" ]; then
+              # JSON values are written on one line.
+              printf '%s=%s\n' "$k" "$(printf '%s' "$v" | tr -d '\n')" >> "$SECRET_FILE"
+            fi
+          done
+          supabase secrets set --env-file "$SECRET_FILE" --project-ref "$PROJECT_REF"
+
+      - name: Deploy functions
+        run: supabase functions deploy --project-ref "$PROJECT_REF"

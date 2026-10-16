@@ -1,0 +1,57 @@
+# Supabase CLI configuration (local development and `supabase config push`).
+project_id = "brewistan"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 15
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[storage]
+enabled = true
+file_size_limit = "10MiB"
+
+[auth]
+enabled = true
+site_url = "https://dashboard.brewistan.com"
+additional_redirect_urls = ["https://admin.brewistan.com", "http://localhost:3000"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+
+[auth.rate_limit]
+sms_sent = 60
+
+[auth.sms]
+enable_signup = true
+enable_confirmations = true
+max_frequency = "60s"
+
+# Login codes are delivered by the auth-send-otp Edge Function through WhatsApp.
+[auth.hook.send_sms]
+enabled = true
+uri = "http://host.docker.internal:54321/functions/v1/auth-send-otp"
+secrets = "env(SEND_SMS_HOOK_SECRET)"
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[auth.email]
+enable_signup = false
+
+[functions.auth-send-otp]
+verify_jwt = false
+
+[functions.push-dispatch]
+verify_jwt = false

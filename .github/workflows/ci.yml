@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  database:
+    name: Database rules (PGlite)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: supabase/tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm test
+
+  functions:
+    name: Edge Functions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.1.x
+      - run: deno check supabase/functions/*/index.ts
+      - run: deno test --allow-env supabase/functions/_tests/
+        env:
+          SUPABASE_URL: http://localhost
+          SUPABASE_SERVICE_ROLE_KEY: test
+
+  web:
+    name: Owner and admin dashboard
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: node --test ../../scripts/audit-checks.mjs ../../scripts/final-checks.mjs
+      - run: node ../../scripts/typecheck-helpers.mjs
+      - run: python3 ../../scripts/audit-platform-checks.py
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci
+          NEXT_TELEMETRY_DISABLED: 1
+
+  mobile:
+    name: Flutter app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: bash scripts/setup-mobile.sh
+      - run: flutter analyze --no-fatal-infos
+        working-directory: apps/mobile
+      - run: flutter test
+        working-directory: apps/mobile
+
+      - name: Record tested mobile resolution
+        run: |
+          mkdir -p mobile-baseline
+          flutter --version --machine > mobile-baseline/flutter-version.json
+          cp apps/mobile/pubspec.lock mobile-baseline/pubspec.lock
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tested-mobile-baseline
+          path: mobile-baseline/
+          retention-days: 30

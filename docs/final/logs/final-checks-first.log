@@ -1,0 +1,124 @@
+TAP version 13
+# Subtest: worker stops immediately at an empty queue
+ok 1 - worker stops immediately at an empty queue
+  ---
+  duration_ms: 1.371069
+  type: 'test'
+  ...
+# Subtest: worker drains successive batches without losing items
+ok 2 - worker drains successive batches without losing items
+  ---
+  duration_ms: 0.404739
+  type: 'test'
+  ...
+# Subtest: worker honors a job cap without claiming unhandled work
+ok 3 - worker honors a job cap without claiming unhandled work
+  ---
+  duration_ms: 0.278562
+  type: 'test'
+  ...
+# Subtest: worker leaves safety headroom before its deadline
+ok 4 - worker leaves safety headroom before its deadline
+  ---
+  duration_ms: 0.178534
+  type: 'test'
+  ...
+# Subtest: worker contains per-job failures while preserving other acknowledgements
+ok 5 - worker contains per-job failures while preserving other acknowledgements
+  ---
+  duration_ms: 0.22971
+  type: 'test'
+  ...
+# Subtest: worker fails on a claim/database error rather than reporting an empty queue
+ok 6 - worker fails on a claim/database error rather than reporting an empty queue
+  ---
+  duration_ms: 0.586127
+  type: 'test'
+  ...
+# Subtest: worker bounds concurrent provider operations
+ok 7 - worker bounds concurrent provider operations
+  ---
+  duration_ms: 8.93544
+  type: 'test'
+  ...
+# Subtest: page numbers reject malformed and excessive values
+ok 8 - page numbers reject malformed and excessive values
+  ---
+  duration_ms: 0.236229
+  type: 'test'
+  ...
+# Subtest: search pagination encodes input as data, not URL control syntax
+ok 9 - search pagination encodes input as data, not URL control syntax
+  ---
+  duration_ms: 0.432901
+  type: 'test'
+  ...
+# Subtest: device-registration messages normalize absent optional fields
+ok 10 - device-registration messages normalize absent optional fields
+  ---
+  duration_ms: 0.359942
+  type: 'test'
+  ...
+# Subtest: registration timestamps have strict integer and two-minute boundaries
+ok 11 - registration timestamps have strict integer and two-minute boundaries
+  ---
+  duration_ms: 0.179987
+  type: 'test'
+  ...
+# Subtest: Ed25519 proof binds every registration context field
+ok 12 - Ed25519 proof binds every registration context field
+  ---
+  duration_ms: 9.166743
+  type: 'test'
+  ...
+# Subtest: browser scheduling matches the database ten-minute lead rule
+ok 13 - browser scheduling matches the database ten-minute lead rule
+  ---
+  duration_ms: 0.726245
+  type: 'test'
+  ...
+# Subtest: all @/ web imports resolve
+ok 14 - all @/ web imports resolve
+  ---
+  duration_ms: 4.108088
+  type: 'test'
+  ...
+# Subtest: all relative Dart imports resolve
+ok 15 - all relative Dart imports resolve
+  ---
+  duration_ms: 1.224261
+  type: 'test'
+  ...
+# Subtest: migration RPC names match every literal application RPC call
+ok 16 - migration RPC names match every literal application RPC call
+  ---
+  duration_ms: 2.780043
+  type: 'test'
+  ...
+# Subtest: source invariant: session gates fail closed for missing MFA and revoked sessions
+ok 17 - source invariant: session gates fail closed for missing MFA and revoked sessions
+  ---
+  duration_ms: 0.273284
+  type: 'test'
+  ...
+# Subtest: source invariant: timeout reconciliation looks up a committed event before rejecting its age
+ok 18 - source invariant: timeout reconciliation looks up a committed event before rejecting its age
+  ---
+  duration_ms: 0.136973
+  type: 'test'
+  ...
+# Subtest: source invariant: queued QR encryption is account- and event-bound
+ok 19 - source invariant: queued QR encryption is account- and event-bound
+  ---
+  duration_ms: 0.191944
+  type: 'test'
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 19
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 299.563997

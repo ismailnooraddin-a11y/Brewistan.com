@@ -1,0 +1,6 @@
+Available: Node 22.16.0, npm 10.9.2, TypeScript compiler 5.8.3, Chromium, Python Playwright/PyYAML/SQLite.
+Installed Tailwind 4.1.10 is incompatible with the project's 3.4.19 CSS build; it was NOT used to claim application visual QA.
+Unavailable: Flutter/Dart, Deno, Supabase CLI/Docker, PostgreSQL server, existing project dependencies including Next.js/React and PGlite.
+Dependency fetch attempt: registry.npmjs.org DNS resolution failed. Original database npm test could not start because PGlite was unavailable.
+The project resolves TypeScript 5.9.3; isolated checks used the available 5.8.3, not the project's full installed toolchain.
+Verification performed is recorded separately; parse checks and local fixtures are not substitutes for full builds, database integration or native/browser UI execution.

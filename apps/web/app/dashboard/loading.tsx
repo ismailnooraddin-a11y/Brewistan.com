@@ -1,0 +1,1 @@
+export default function Loading(){return <div role="status" aria-live="polite" className="card"><h1 className="text-xl">Loading your dashboard</h1><p className="mt-2 text-sm text-ink-muted">Retrieving the latest cafe data.</p></div>;}

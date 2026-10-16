@@ -1,0 +1,16 @@
+test_account_filter_and_inflight_delay (__main__.PlatformChecks.test_account_filter_and_inflight_delay) ... ok
+test_deployment_requires_successful_ci_commit (__main__.PlatformChecks.test_deployment_requires_successful_ci_commit) ... ok
+test_fresh_sqlite_schema (__main__.PlatformChecks.test_fresh_sqlite_schema) ... ok
+test_legacy_queue_retained_but_not_assigned_to_new_user (__main__.PlatformChecks.test_legacy_queue_retained_but_not_assigned_to_new_user) ... ok
+test_migration_lexical_integrity_only (__main__.PlatformChecks.test_migration_lexical_integrity_only) ... ok
+test_offline_cap_excludes_other_devices_and_online (__main__.PlatformChecks.test_offline_cap_excludes_other_devices_and_online) ... ok
+test_results_retain_reason_without_customer_payload (__main__.PlatformChecks.test_results_retain_reason_without_customer_payload) ... ok
+test_scaffold_merge_preserves_app_files_and_fixes_both_gradle_dialects (__main__.PlatformChecks.test_scaffold_merge_preserves_app_files_and_fixes_both_gradle_dialects) ... ok
+test_shell_scripts_parse (__main__.PlatformChecks.test_shell_scripts_parse) ... ok
+test_signing_rejects_missing_keys_and_uses_environment_not_embedded_passwords (__main__.PlatformChecks.test_signing_rejects_missing_keys_and_uses_environment_not_embedded_passwords) ... ok
+test_transaction_rollback_does_not_consume_voucher (__main__.PlatformChecks.test_transaction_rollback_does_not_consume_voucher) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 3.094s
+
+OK
