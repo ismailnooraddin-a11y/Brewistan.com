@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../cards/card_designs.dart';
 import '../state/models.dart';
-import '../theme.dart';
 import 'puzzle.dart';
 
 /// A cafe card. Classic cafes use the customer's status tier background; Signature

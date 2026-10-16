@@ -159,7 +159,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
         await state.db.completeEvents([{'eventId': eventId, 'status': response['status'],
           'reason': response['reason'], 'final': true}], userId);
         state.notifyPendingChanged();
-        return _showServerResult(response);
+        return await _showServerResult(response);
       } on ApiException catch (e) {
         if (!e.network && !e.requiresReauthentication) {
           await state.db.completeEvents([{'eventId': eventId, 'status': 'rejected', 'reason': e.code, 'final': true}], userId);
