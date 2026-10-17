@@ -13,7 +13,7 @@ export function MfaForm({ factorId: existing }: { factorId: string | null }) {
 
   useEffect(() => {
     if (existing) return;
-    supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: `Brewistan admin ${Date.now()}` }).then(({ data, error }) => {
+    supabase.auth.mfa.enroll({ factorType: 'totp', issuer: 'Brewistan', friendlyName: `Brewistan admin ${Date.now()}` }).then(({ data, error }) => {
       if (error) return setError(error.message);
       setFactorId(data.id);
       setQr(data.totp.qr_code);
