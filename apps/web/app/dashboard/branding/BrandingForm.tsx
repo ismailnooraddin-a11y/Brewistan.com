@@ -34,11 +34,12 @@ function StampPreview({ styleId, color }: { styleId: string; color: string }) {
   );
 }
 
-export function BrandingForm({ cafeId, tier, brand, logoUrl }: {
-  cafeId: string; tier: 'signature' | 'bespoke'; brand: Record<string, string>; logoUrl: string | null;
+export function BrandingForm({ cafeId, cafeName, tier, brand, logoUrl }: {
+  cafeId: string; cafeName: string; tier: 'signature' | 'bespoke'; brand: Record<string, string>; logoUrl: string | null;
 }) {
   const router = useRouter();
   const supabase = createClient();
+  const [name, setName] = useState(cafeName);
   const [template, setTemplate] = useState(cardDesignById(brand.template).id);
   const [primary, setPrimary] = useState(brand.primary ?? cardDesignById(brand.template).bg);
   const [accent, setAccent] = useState(brand.accent ?? cardDesignById(brand.template).fg);
@@ -83,11 +84,13 @@ export function BrandingForm({ cafeId, tier, brand, logoUrl }: {
 
   async function save() {
     if (busy) return;
+    const trimmedName = name.trim();
+    if (trimmedName.length < 2) { setMsg('Enter a name with at least 2 characters.'); return; }
     if (!(contrastRatio(primary, accent) >= 4.5)) { setMsg('Choose colors with a contrast ratio of at least 4.5:1 so the card stays readable.'); return; }
     setBusy(true);
     try {
     const value = { template, primary, accent, stamp };
-    const { error } = await supabase.from('cafes').update({ brand: value }).eq('id', cafeId).select('id').single();
+    const { error } = await supabase.from('cafes').update({ name: trimmedName, brand: value }).eq('id', cafeId).select('id').single();
     setBusy(false);
     setMsg(error ? error.message : 'Saved.');
     router.refresh();
@@ -96,6 +99,7 @@ export function BrandingForm({ cafeId, tier, brand, logoUrl }: {
   }
 
   const bg = primary, fg = accent;
+  const displayName = name.trim() || 'Your cafe';
 
   return (
     <div className="space-y-6">
@@ -106,6 +110,18 @@ export function BrandingForm({ cafeId, tier, brand, logoUrl }: {
       )}
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
         <div className="card space-y-6">
+          <div>
+            <label className="label" htmlFor="card-name">Card name</label>
+            <input
+              id="card-name"
+              className="input w-full max-w-sm"
+              value={name}
+              maxLength={40}
+              disabled={busy}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <p className="mt-1 text-xs text-ink-muted">This is how your cafe's name reads on the customer's card.</p>
+          </div>
           <div>
             <label className="label" htmlFor="logo">Logo</label>
             <input id="logo" className="max-w-full" type="file" accept="image/png,image/webp,image/jpeg" disabled={busy}
@@ -174,7 +190,7 @@ export function BrandingForm({ cafeId, tier, brand, logoUrl }: {
                   <img src={logoUrl} alt="" className="h-full w-full object-contain" />
                 </span>
               ) : null}
-              <span className="font-display text-lg">Your cafe</span>
+              <span className="font-display text-lg">{displayName}</span>
             </div>
             <div className="relative mt-6 grid grid-cols-4 gap-2">
               {Array.from({ length: 8 }).map((_, i) => (

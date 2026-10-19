@@ -13,7 +13,7 @@ export default async function BrandingPage() {
       {cafe.tier === 'classic' ? (
         <ClassicCardForm cafeId={cafe.id} cafeName={cafe.name} />
       ) : (
-        <BrandingForm cafeId={cafe.id} tier={cafe.tier} brand={cafe.brand ?? {}} logoUrl={logoUrl} />
+        <BrandingForm cafeId={cafe.id} cafeName={cafe.name} tier={cafe.tier} brand={cafe.brand ?? {}} logoUrl={logoUrl} />
       )}
     </>
   );
