@@ -1,6 +1,7 @@
 import { getT, requireOwnerContext } from '@/lib/server-context';
-import { PageHeader, Notice } from '@/components/ui';
+import { PageHeader } from '@/components/ui';
 import { BrandingForm } from './BrandingForm';
+import { ClassicCardForm } from './ClassicCardForm';
 
 export default async function BrandingPage() {
   const { supabase, cafe } = await requireOwnerContext();
@@ -10,10 +11,7 @@ export default async function BrandingPage() {
     <>
       <PageHeader title={t('branding.title')} description="How your card looks in the customer app." />
       {cafe.tier === 'classic' ? (
-        <Notice title="Classic plan">
-          Classic cards use the standard layout with your cafe name. Upgrade to Signature for your logo and premium dark templates,
-          or Bespoke for a fully custom card designed by our team.
-        </Notice>
+        <ClassicCardForm cafeId={cafe.id} cafeName={cafe.name} />
       ) : (
         <BrandingForm cafeId={cafe.id} tier={cafe.tier} brand={cafe.brand ?? {}} logoUrl={logoUrl} />
       )}
