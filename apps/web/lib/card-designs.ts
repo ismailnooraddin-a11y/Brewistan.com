@@ -40,3 +40,30 @@ export function cardDesignById(id: string | null | undefined): CardDesign {
     CARD_DESIGNS[0]
   );
 }
+
+// -----------------------------------------------------------------------------
+// Stamp styles. How a single collected stamp looks on the card. Classic cafes
+// always get the default; Signature and Bespoke may choose. The id is what the
+// database validates (cafes.brand.stamp) and what the mobile app draws
+// (apps/mobile/lib/widgets/puzzle.dart) — keep the three lists in sync.
+// -----------------------------------------------------------------------------
+export interface StampStyle {
+  id: string;
+  name: string;
+}
+
+export const DEFAULT_STAMP_STYLE_ID = 'cup';
+
+export const STAMP_STYLES: StampStyle[] = [
+  { id: 'cup', name: 'Coffee cup' },
+  { id: 'dot', name: 'Classic dot' },
+  { id: 'bean', name: 'Coffee bean' },
+];
+
+export function stampStyleById(id: string | null | undefined): StampStyle {
+  return (
+    STAMP_STYLES.find((s) => s.id === id) ??
+    STAMP_STYLES.find((s) => s.id === DEFAULT_STAMP_STYLE_ID) ??
+    STAMP_STYLES[0]
+  );
+}

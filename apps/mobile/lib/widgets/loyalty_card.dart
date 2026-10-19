@@ -80,7 +80,13 @@ class LoyaltyCard extends StatelessWidget {
                   ),
                 ]),
                 const SizedBox(height: 18),
-                PuzzleGrid(filled: card.stampsInCurrent, total: card.stampsRequired, color: fg, name: card.name),
+                PuzzleGrid(
+                  filled: card.stampsInCurrent,
+                  total: card.stampsRequired,
+                  color: fg,
+                  name: card.name,
+                  style: (card.brand['stamp'] as String?) ?? defaultStampStyle,
+                ),
                 const SizedBox(height: 14),
                 if (archivedText != null && card.archived)
                   Text(archivedText!, style: TextStyle(color: fg.withValues(alpha: 0.8)))
