@@ -11,14 +11,14 @@ import { createClient } from '@/lib/supabase/client';
 function StampPreview({ styleId, color }: { styleId: string; color: string }) {
   if (styleId === 'dot') {
     return (
-      <svg viewBox="0 0 40 40" className="h-8 w-8">
+      <svg viewBox="0 0 40 40" className="h-10 w-10">
         <circle cx="20" cy="20" r="14" fill={color} />
       </svg>
     );
   }
   if (styleId === 'bean') {
     return (
-      <svg viewBox="0 0 40 40" className="h-8 w-8">
+      <svg viewBox="0 0 40 40" className="h-10 w-10">
         <path d="M20 6 C30 10 30 30 20 34 C10 30 10 10 20 6 Z" fill={color} />
         <path d="M19 10 C24 20 19 20 19 30" stroke="rgba(255,255,255,0.45)" strokeWidth="2.2" fill="none" strokeLinecap="round" />
       </svg>
@@ -26,7 +26,7 @@ function StampPreview({ styleId, color }: { styleId: string; color: string }) {
   }
   // cup
   return (
-    <svg viewBox="0 0 40 40" className="h-8 w-8">
+    <svg viewBox="0 0 40 40" className="h-10 w-10">
       <path d="M9 9 h22 v23 a4 4 0 0 1 -4 4 h-14 a4 4 0 0 1 -4 -4 Z" fill={color} />
       <ellipse cx="20" cy="9" rx="11" ry="2.4" fill={color} />
       <path d="M31 13 a6 7 0 0 1 0 12" stroke={color} strokeWidth="3" fill="none" strokeLinecap="round" />
