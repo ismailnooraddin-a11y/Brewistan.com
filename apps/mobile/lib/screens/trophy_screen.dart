@@ -29,8 +29,9 @@ class TrophyScreen extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: tierGradients[tier]!),
+            gradient: LinearGradient(colors: tierGradients[tier]!, begin: Alignment.topLeft, end: Alignment.bottomRight),
             borderRadius: BorderRadius.circular(20),
+            boxShadow: tierShadowFor(tier).shadows,
           ),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(state.t('trophy.tier'), style: const TextStyle(color: Colors.white70)),

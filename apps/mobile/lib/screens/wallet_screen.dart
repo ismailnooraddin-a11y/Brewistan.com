@@ -53,6 +53,7 @@ class WalletScreen extends StatelessWidget {
                     customerTier: tier,
                     tierLabel: state.t('tier.$tier'),
                     rewardText: '${state.t('wallet.reward')} · ${card.label(state.lang,at:state.time.now())}',
+                    goalText: card.label(state.lang, at: state.time.now()),
                     archivedText: state.t('wallet.archived'),
                     onTap: card.archived
                         ? null
