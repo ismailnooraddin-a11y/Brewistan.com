@@ -3,6 +3,7 @@ import { pageNumber } from '@/lib/pagination';
 import { getT, requireOwnerContext } from '@/lib/server-context';
 import { PageHeader, Badge, EmptyState, formatDate } from '@/components/ui';
 import { VoidButton } from './VoidButton';
+import { RiskPanel, type RiskRow } from './RiskPanel';
 
 const REASONS: Record<string, string> = {
   cooldown: 'Scanned again within the cooldown',
@@ -51,11 +52,14 @@ export default async function ActivityPage({searchParams}:{searchParams:Promise<
   const redemptions:Redemption[]=activity?.redemptions??[];
   const issues:Issue[]=activity?.issues??[];
   const audit:{id:number;action:string;reason:string|null;created_at:string}[]=activity?.audit??[];
+  const { data: risk } = await supabase.rpc('owner_risk_report', { p_cafe: cafe.id, p_days: 30 });
+  const riskRows = (risk ?? []) as RiskRow[];
 
   return (
     <>
-      <PageHeader title={t('activity.title')} description="Redemptions, rejected or flagged scans, and account changes. Each page shows up to 50 entries per section, newest first." />
-      <div className="space-y-8">
+      <PageHeader title={t('nav.activity')} description="A health check on every barista, then redemptions, rejected or flagged scans and account changes, newest first." />
+      <div className="space-y-10">
+        {page === 1 && <RiskPanel rows={riskRows} />}
         <section>
           <h2 className="mb-3 text-lg">Redemptions</h2>
           {!redemptions?.length ? <EmptyState title="No redemptions yet" /> : (

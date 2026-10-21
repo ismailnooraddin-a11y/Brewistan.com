@@ -16,6 +16,17 @@ interface Campaign {
   delivered_count: number | null;
 }
 
+const FRIENDLY: Record<string, string> = {
+  plan_no_campaigns: 'Campaigns are part of the Signature and Bespoke plans. Upgrade on the Billing page to send them.',
+  monthly_limit: 'You have used all your campaigns for that month. Pick a date next month, or upgrade for more.',
+  schedule_too_soon: 'Schedule the campaign at least 5 minutes from now.',
+  wrong_code: 'That code is not right. Check WhatsApp and try again.',
+  code_expired: 'The code has expired. Request a new one.',
+};
+function friendlyError(message: string): string {
+  return FRIENDLY[message.trim()] ?? message;
+}
+
 export function PushComposer({ cafeId, campaigns }: { cafeId: string; campaigns: Campaign[] }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +68,7 @@ export function PushComposer({ cafeId, campaigns }: { cafeId: string; campaigns:
       setApproving({ id, audience: r.audience });
       setCode('');
     } catch (e) {
-      setError((e as Error).message);
+      setError(friendlyError((e as Error).message));
     } finally { setBusy(false); }
   }
 
@@ -69,7 +80,7 @@ export function PushComposer({ cafeId, campaigns }: { cafeId: string; campaigns:
       setApproving(null);
       router.refresh();
     } catch (e) {
-      setError((e as Error).message);
+      setError(friendlyError((e as Error).message));
     } finally {
       setBusy(false);
     }

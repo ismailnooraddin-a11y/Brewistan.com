@@ -2,10 +2,10 @@ import type { ReactNode } from 'react';
 
 export function PageHeader({ title, description, action }: { title: string; description?: string; action?: ReactNode }) {
   return (
-    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h1 className="text-2xl font-semibold sm:text-3xl">{title}</h1>
-        {description && <p className="mt-1 max-w-2xl text-sm text-ink-muted">{description}</p>}
+        <h1 className="text-[28px] font-semibold leading-tight sm:text-[34px]">{title}</h1>
+        {description && <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-ink-muted">{description}</p>}
       </div>
       {action}
     </div>
@@ -15,8 +15,8 @@ export function PageHeader({ title, description, action }: { title: string; desc
 export function StatTile({ label, value, hint }: { label: string; value: ReactNode; hint?: string }) {
   return (
     <div className="card">
-      <div className="text-xs font-medium uppercase tracking-wider text-ink-muted">{label}</div>
-      <div className="mt-2 font-display text-3xl font-semibold tabular-nums">{value}</div>
+      <div className="text-[13px] font-medium text-ink-muted">{label}</div>
+      <div className="mt-1.5 font-display text-[32px] font-semibold tracking-tight tabular-nums">{value}</div>
       {hint && <div className="mt-1 text-xs text-ink-muted">{hint}</div>}
     </div>
   );
@@ -36,13 +36,13 @@ export function Badge({ tone = 'neutral', children }: { tone?: keyof typeof TONE
 
 export function Notice({ tone = 'neutral', title, children }: { tone?: 'neutral' | 'good' | 'warn' | 'bad'; title?: string; children?: ReactNode }) {
   const styles = {
-    neutral: 'border-ink/10 bg-white',
+    neutral: 'border-ink/[0.08] bg-white',
     good: 'border-good/30 bg-good/5',
     warn: 'border-warn/30 bg-warn/5',
     bad: 'border-bad/30 bg-bad/5',
   }[tone];
   return (
-    <div role={tone === 'bad' ? 'alert' : 'status'} aria-atomic="true" className={`rounded-xl border p-4 text-sm ${styles}`}>
+    <div role={tone === 'bad' ? 'alert' : 'status'} aria-atomic="true" className={`rounded-2xl border p-4 text-sm ${styles}`}>
       {title && <div className="mb-1 font-medium">{title}</div>}
       {children}
     </div>
@@ -51,8 +51,8 @@ export function Notice({ tone = 'neutral', title, children }: { tone?: 'neutral'
 
 export function EmptyState({ title, children }: { title: string; children?: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-dashed border-ink/15 p-10 text-center">
-      <div className="font-display text-lg">{title}</div>
+    <div className="rounded-[20px] bg-white p-10 text-center shadow-soft ring-1 ring-black/[0.04]">
+      <div className="font-display text-lg font-semibold">{title}</div>
       {children && <div className="mx-auto mt-2 max-w-md text-sm text-ink-muted">{children}</div>}
     </div>
   );

@@ -70,4 +70,69 @@ export async function finalRegression(db,ids){
  await assert.rejects(db.query("update public.cafes set brand='{\"template\":\"Bad Id!\"}'::jsonb where id=$1",[ids.cafe]),/invalid_brand/);
  await db.query("update public.cafes set brand='{}'::jsonb where id=$1",[ids.cafe]);
  console.log('final: card design ids accepted by format, malformed ids rejected');
+
+ // Signature cafes may now set their own card colours, and any paid tier may
+ // choose a stamp style; previously the database silently stripped these for
+ // Signature cafes, keeping only the template.
+ await as(null);
+ await db.query("update public.cafes set tier='signature' where id=$1",[ids.cafe]);
+ // An earlier test transferred this cafe to a new owner; look it up rather than assume ids.owner.
+ const currentOwner=(await one('select owner_id from public.cafes where id=$1',[ids.cafe])).owner_id;
+ await as(currentOwner);
+ await db.exec('set role authenticated');
+ await db.query(`update public.cafes set brand='{"template":"emerald","primary":"#123c33","accent":"#e5d3a1","stamp":"bean"}'::jsonb where id=$1`,[ids.cafe]);
+ const saved=(await one('select brand from public.cafes where id=$1',[ids.cafe])).brand;
+ assert.equal(saved.primary,'#123c33');
+ assert.equal(saved.accent,'#e5d3a1');
+ assert.equal(saved.stamp,'bean');
+ // A well-formed id for a style the apps don't know yet is accepted (apps fall back to the default).
+ await db.query(`update public.cafes set brand='{"stamp":"polka_dot"}'::jsonb where id=$1`,[ids.cafe]);
+ await assert.rejects(db.query(`update public.cafes set brand='{"stamp":"Not Valid!"}'::jsonb where id=$1`,[ids.cafe]),/invalid_stamp_style/);
+ await db.exec('reset role');
+ await as(null);
+ await db.query("update public.cafes set tier='classic', brand='{}'::jsonb where id=$1",[ids.cafe]);
+ console.log('final: signature cafes can set colours and a stamp style; invalid stamp styles are rejected');
+
+ // Campaign limits per plan: Classic 0, Signature 1, Bespoke 5 per month.
+ await as(null);
+ const nextMonth="date_trunc('month', now() at time zone 'Asia/Baghdad') at time zone 'Asia/Baghdad' + interval '1 month' + interval '2 days'";
+ await db.query("update public.cafes set tier='classic' where id=$1",[ids.cafe]);
+ assert.equal((await one(`select public.push_quota_problem($1, ${nextMonth}) p`,[ids.cafe])).p,'plan_no_campaigns');
+ await db.query("update public.cafes set tier='signature' where id=$1",[ids.cafe]);
+ assert.equal((await one(`select public.push_quota_problem($1, ${nextMonth}) p`,[ids.cafe])).p,null);
+ const pushOwner=(await one('select owner_id from public.cafes where id=$1',[ids.cafe])).owner_id;
+ await db.query(`insert into public.push_campaigns (cafe_id, title, body, scheduled_at, status, created_by)
+   values ($1, '{"en":"Hi"}', '{"en":"Body"}', ${nextMonth}, 'approved', $2)`,[ids.cafe,pushOwner]);
+ assert.equal((await one(`select public.push_quota_problem($1, ${nextMonth}) p`,[ids.cafe])).p,'monthly_limit');
+ await db.query("update public.cafes set tier='bespoke' where id=$1",[ids.cafe]);
+ assert.equal((await one(`select public.push_quota_problem($1, ${nextMonth}) p`,[ids.cafe])).p,null);
+ await db.query("update public.cafes set tier='classic' where id=$1",[ids.cafe]);
+ console.log('final: campaign limits per plan (classic 0, signature 1, bespoke 5 per month)');
+
+ // Scan risk report: a quiet barista is green; night stamps and two-branch hops raise the level.
+ const riskBarista=crypto.randomUUID(), riskCustomer=crypto.randomUUID();
+ await db.query(`insert into public.memberships (cafe_id, phone, role, invited_by) values ($1, '9647709999001', 'barista', $2)`,[ids.cafe,pushOwner]);
+ await db.query('insert into auth.users (id, phone, phone_confirmed_at) values ($1, $2, now())',[riskBarista,'9647709999001']);
+ await db.query('insert into auth.users (id, phone, phone_confirmed_at) values ($1, $2, now())',[riskCustomer,'9647709999002']);
+ await db.query("update public.memberships set status='active', user_id=$2 where cafe_id=$1 and phone='9647709999001'",[ids.cafe,riskBarista]);
+ await as(pushOwner);await db.exec('set role authenticated');
+ let riskReport=(await db.query('select * from public.owner_risk_report($1)',[ids.cafe])).rows;
+ const quiet=riskReport.find(r=>r.staff_id===riskBarista);
+ assert.ok(quiet,'active barista appears in the report');
+ assert.equal(quiet.level,'green');
+ await db.exec('reset role');await as(null);
+ const branch2=(await one("insert into public.branches (cafe_id, name) values ($1,'Second branch') returning id",[ids.cafe])).id;
+ const night="date_trunc('day', now() at time zone 'Asia/Baghdad') at time zone 'Asia/Baghdad' - interval '1 day' + interval '3 hours'";
+ await db.query(`insert into public.stamp_events (id, user_id, cafe_id, branch_id, staff_id, scanned_at, status)
+   values ($1,$2,$3,$4,$5, ${night}, 'accepted'), ($6,$2,$3,$7,$5, ${night} + interval '10 minutes', 'accepted')`,
+   [crypto.randomUUID(),riskCustomer,ids.cafe,ids.branch,riskBarista,crypto.randomUUID(),branch2]);
+ await as(pushOwner);await db.exec('set role authenticated');
+ riskReport=(await db.query('select * from public.owner_risk_report($1)',[ids.cafe])).rows;
+ const flagged=riskReport.find(r=>r.staff_id===riskBarista);
+ assert.equal(flagged.level,'yellow');
+ const texts=flagged.reasons.map(r=>r.text).join(' | ');
+ assert.match(texts,/between 1:00 and 6:00/);
+ assert.match(texts,/two branches within 30 minutes/);
+ await db.exec('reset role');await as(null);
+ console.log('final: scan risk report flags night stamps and two-branch hops, quiet baristas stay green');
 }

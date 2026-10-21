@@ -26,6 +26,9 @@ Deno.serve(handler(async (req) => {
   await requireOwner(user.id, c.cafe_id);
   if (c.status !== 'draft') throw new HttpError(409, 'not_draft');
   if (Date.parse(c.scheduled_at) < Date.now() + 300_000) throw new HttpError(409, 'schedule_too_soon');
+  // Plan limits (Classic 0, Signature 1, Bespoke 5 per month) are checked before a code is sent.
+  const quota = check(await admin.rpc('push_quota_problem', { p_cafe: c.cafe_id, p_at: c.scheduled_at }));
+  if (quota) throw new HttpError(quota === 'monthly_limit' ? 429 : 403, String(quota));
   // Membership count is deliberately not part of this hash. Customers may join or mute
   // between request and verify. The approval covers this explicit audience rule.
   const payload = { id: c.id, cafe: c.cafe_id, title: c.title, body: c.body,

@@ -15,17 +15,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-screen">
-      <header className="flex flex-wrap items-center gap-4 bg-ink px-4 py-4 text-cream sm:px-8">
-        <span className="font-display text-xl">Brewistan Admin</span>
+      <header className="sticky top-0 z-10 flex flex-wrap items-center gap-4 border-b border-black/[0.06] bg-white/75 px-4 py-3 backdrop-blur-xl sm:px-8">
+        <span className="font-display text-lg font-semibold tracking-tight">Brewistan Admin</span>
         <nav aria-label="Administration" className="flex flex-wrap gap-1 text-sm">
-          <Link href="/admin" className="rounded px-3 py-1.5 hover:bg-white/10">Review queue</Link>
-          <Link href="/admin/cafes" className="rounded px-3 py-1.5 hover:bg-white/10">Cafes</Link>
-          <Link href="/admin/payments" className="rounded px-3 py-1.5 hover:bg-white/10">Payments</Link>
-          <Link href="/admin/ownership" className="rounded px-3 py-1.5 hover:bg-white/10">Transfers</Link>
-          <Link href="/admin/operations" className="rounded px-3 py-1.5 hover:bg-white/10">Operations</Link>
+          <Link href="/admin" className="rounded-full px-3 py-1.5 text-ink-soft hover:bg-ink/[0.06] hover:text-ink">Review queue</Link>
+          <Link href="/admin/cafes" className="rounded-full px-3 py-1.5 text-ink-soft hover:bg-ink/[0.06] hover:text-ink">Cafes</Link>
+          <Link href="/admin/payments" className="rounded-full px-3 py-1.5 text-ink-soft hover:bg-ink/[0.06] hover:text-ink">Payments</Link>
+          <Link href="/admin/ownership" className="rounded-full px-3 py-1.5 text-ink-soft hover:bg-ink/[0.06] hover:text-ink">Transfers</Link>
+          <Link href="/admin/operations" className="rounded-full px-3 py-1.5 text-ink-soft hover:bg-ink/[0.06] hover:text-ink">Operations</Link>
         </nav>
         <form action="/logout" method="post" className="ms-auto">
-          <button className="text-sm text-cream/70 hover:text-cream">Sign out</button>
+          <button className="text-sm text-ink-muted hover:text-ink">Sign out</button>
         </form>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-8">{children}</main>

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../state/app_state.dart';
+import '../state/models.dart';
 import 'code_screen.dart';
 import 'settings_screen.dart';
 import 'staff/staff_gate.dart';
@@ -16,6 +17,28 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   int _index = 0;
+  bool _openingCard = false;
+
+  /// Opens the card of the cafe whose notification was tapped.
+  void _openFocusedCard(AppState state) {
+    final focus = state.focusCafeId;
+    final cards = state.wallet?.cards;
+    if (focus == null || cards == null || _openingCard) return;
+    CafeCard? match;
+    for (final c in cards) {
+      if (c.cafeId == focus && !c.archived) { match = c; break; }
+    }
+    if (match == null) return;
+    final card = match;
+    _openingCard = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _openingCard = false;
+      if (!mounted) return;
+      state.clearFocusCafe();
+      setState(() => _index = 0);
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => CodeScreen(card: card)));
+    });
+  }
 
   @override
   void initState() {
@@ -37,6 +60,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
+    _openFocusedCard(state);
     final pages = <Widget>[
       const WalletScreen(),
       const CodeScreen(),

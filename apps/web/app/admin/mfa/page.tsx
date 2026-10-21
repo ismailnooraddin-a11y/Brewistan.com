@@ -16,7 +16,7 @@ export default async function MfaPage() {
   const verified = factors?.totp?.find((f) => f.status === 'verified');
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-ink px-4">
+    <main className="flex min-h-screen items-center justify-center bg-cream px-4">
       <div className="card w-full max-w-sm">
         <h1 className="text-xl font-semibold">Admin verification</h1>
         <p className="mt-1 text-sm text-ink-muted">

@@ -16,7 +16,12 @@ class PushService {
   void dispose() { _tokenSub?.cancel(); _messageSub?.cancel(); _openedSub?.cancel(); _tokenSub = null; }
   Future<void> removeToken() async { if (_ready) { try { await FirebaseMessaging.instance.deleteToken(); } catch (_) {} } }
 
-  Future<String?> init({void Function(String token)? onTokenRefresh, void Function(Map<String,dynamic>)? onMessage}) async {
+  Future<String?> init({
+    void Function(String token)? onTokenRefresh,
+    void Function(Map<String,dynamic>)? onMessage,
+    /// Called when the customer taps a notification (app in background or closed).
+    void Function(Map<String,dynamic>)? onOpened,
+  }) async {
     if (!AppConfig.pushConfigured) return null;
     try {
       if (!_ready) {
@@ -36,9 +41,17 @@ class PushService {
       await _messageSub?.cancel(); await _openedSub?.cancel();
       if (onMessage != null) {
         _messageSub = FirebaseMessaging.onMessage.listen((m) => onMessage(Map<String,dynamic>.from(m.data)));
-        _openedSub = FirebaseMessaging.onMessageOpenedApp.listen((m) => onMessage(Map<String,dynamic>.from(m.data)));
+        _openedSub = FirebaseMessaging.onMessageOpenedApp.listen((m) {
+          final data = Map<String,dynamic>.from(m.data);
+          onMessage(data);
+          onOpened?.call(data);
+        });
         final initial = await FirebaseMessaging.instance.getInitialMessage();
-        if (initial != null) onMessage(Map<String,dynamic>.from(initial.data));
+        if (initial != null) {
+          final data = Map<String,dynamic>.from(initial.data);
+          onMessage(data);
+          onOpened?.call(data);
+        }
       }
       await FirebaseMessaging.instance.requestPermission();
       return await FirebaseMessaging.instance.getToken();

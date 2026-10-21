@@ -65,7 +65,7 @@ export function ClassicCardForm({ cafeId, cafeName }: { cafeId: string; cafeName
         <div className="label">Preview</div>
         <div className="rounded-xl border border-ink/10 bg-[#6E4423] p-5 text-[#F3E9DD]">
           <div className="flex items-center justify-between">
-            <span className="font-display text-lg">{name.trim() || 'Your cafe'}</span>
+            <span className="font-card text-lg">{name.trim() || 'Your cafe'}</span>
             <span className="rounded-full border border-white/20 px-2.5 py-0.5 text-[10px] tracking-wide">BRONZE</span>
           </div>
           <div className="mt-6 grid grid-cols-4 gap-1.5">

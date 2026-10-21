@@ -69,10 +69,10 @@ export function CafeCardPreview({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={logoUrl} alt="" className="h-full w-full rounded-full object-contain" />
           ) : (
-            <span className="font-display text-base">{initial}</span>
+            <span className="font-card text-base">{initial}</span>
           )}
         </div>
-        <div className="min-w-0 flex-1 truncate font-display text-[19px] leading-tight">{name}</div>
+        <div className="min-w-0 flex-1 truncate font-card text-[19px] leading-tight">{name}</div>
         <div className="shrink-0 text-[9px] uppercase tracking-[0.18em] opacity-60">Loyalty</div>
       </div>
 

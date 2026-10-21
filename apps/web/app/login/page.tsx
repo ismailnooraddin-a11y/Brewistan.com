@@ -8,11 +8,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const { locale, t } = await getT();
   const { expired } = await searchParams;
   return (
-    <main className="flex min-h-screen items-center justify-center bg-ink px-4 py-12">
+    <main className="flex min-h-screen items-center justify-center bg-cream px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <div className="font-display text-4xl text-cream">Brewistan</div>
-          <div className="mt-2 text-xs uppercase tracking-[0.3em] text-gold">Cafe loyalty</div>
+          <div className="font-display text-[40px] font-semibold tracking-tight text-ink">Brewistan</div>
+          <div className="mt-1 text-[15px] text-ink-muted">Cafe loyalty, beautifully simple.</div>
         </div>
         <div className="card">
           <div className="mb-4 flex items-start justify-between gap-3">

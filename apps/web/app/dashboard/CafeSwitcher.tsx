@@ -6,13 +6,13 @@ export function CafeSwitcher({ cafes, current }: { cafes: { id: string; name: st
   const router = useRouter();
   if (cafes.length < 2) {
     return (
-      <a href="/onboarding?new=1" className="text-xs text-gold hover:underline">+ Add another cafe</a>
+      <a href="/onboarding?new=1" className="text-[13px] text-gold hover:underline">+ Add another cafe</a>
     );
   }
   return (
     <select
       aria-label="Cafe"
-      className="w-full rounded-lg border border-white/20 bg-ink-soft px-2 py-1.5 text-sm text-cream"
+      className="w-full rounded-[10px] border-0 bg-ink/[0.05] px-3 py-2 text-sm font-medium text-ink outline-none focus:ring-4 focus:ring-gold/15"
       value={current}
       onChange={(e) => {
         if (e.target.value === 'new') {

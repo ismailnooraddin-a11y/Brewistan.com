@@ -9,7 +9,7 @@ export default async function BrandingPage() {
   const logoUrl = cafe.logo_path ? supabase.storage.from('branding').getPublicUrl(cafe.logo_path).data.publicUrl : null;
   return (
     <>
-      <PageHeader title={t('branding.title')} description="How your card looks in the customer app." />
+      <PageHeader title={t('nav.branding')} description="How your card looks in the customer app." />
       {cafe.tier === 'classic' ? (
         <ClassicCardForm cafeId={cafe.id} cafeName={cafe.name} />
       ) : (

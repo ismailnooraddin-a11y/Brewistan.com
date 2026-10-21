@@ -39,6 +39,11 @@ class AppState extends ChangeNotifier {
   AppPhase phase = AppPhase.loading;
   String lang = 'en';
   WalletData? wallet;
+
+  /// Set when the customer taps a cafe's notification; the home screen opens
+  /// that cafe's card once the wallet has it, then clears this.
+  String? focusCafeId;
+  void clearFocusCafe() { focusCafeId = null; }
   bool walletFromCache = false;
   int pendingSync = 0;
   String? _userId;
@@ -152,6 +157,13 @@ class AppState extends ChangeNotifier {
       final token = pushToken ?? await push.init(
         onTokenRefresh: (t) { if (_current(id, generation)) unawaited(registerDevice(pushToken: t)); },
         onMessage: (data) { unawaited(_handlePush(data, id, generation)); },
+        onOpened: (data) {
+          // Tapping a notification opens the app on that cafe's card.
+          if (_current(id, generation) && data['userId'] == id && data['cafeId'] is String) {
+            focusCafeId = data['cafeId'] as String;
+            notifyListeners();
+          }
+        },
       );
       if (!_current(id, generation)) return;
       final access = _client.auth.currentSession?.accessToken;
