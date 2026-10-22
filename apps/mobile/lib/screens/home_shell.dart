@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -44,6 +45,11 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    if (kIsWeb) {
+      // In the web app a tapped notification opens app.brewistan.com/?cafe=<id>.
+      final cafe = Uri.base.queryParameters['cafe'];
+      if (cafe != null && cafe.isNotEmpty) context.read<AppState>().focusCafeId = cafe;
+    }
   }
 
   @override

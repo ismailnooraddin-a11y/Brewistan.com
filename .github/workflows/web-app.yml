@@ -1,0 +1,107 @@
+name: Web app (PWA)
+
+# Builds the customer and staff app for the browser and publishes it with
+# GitHub Pages at app.brewistan.com. Runs after every change to the app.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/mobile/**'
+      - '.github/workflows/web-app.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: web-app-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    env:
+      SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+      PLATFORM_PUBLIC_KEY: ${{ vars.PLATFORM_PUBLIC_KEY }}
+      FIREBASE_API_KEY: ${{ vars.FIREBASE_API_KEY }}
+      FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+      FIREBASE_SENDER_ID: ${{ vars.FIREBASE_SENDER_ID }}
+      FIREBASE_WEB_APP_ID: ${{ vars.FIREBASE_WEB_APP_ID }}
+      FIREBASE_VAPID_KEY: ${{ vars.FIREBASE_VAPID_KEY }}
+      SUPPORT_WHATSAPP: ${{ vars.SUPPORT_WHATSAPP }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check required variables
+        run: |
+          missing=0
+          for v in SUPABASE_URL SUPABASE_ANON_KEY PLATFORM_PUBLIC_KEY; do
+            if [ -z "${!v}" ]; then echo "::error::GitHub variable $v is missing"; missing=1; fi
+          done
+          exit $missing
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install packages
+        run: flutter pub get
+
+      - name: Add SQLite for the browser
+        # Copies sqlite3.wasm and sqflite_sw.js into web/.
+        run: dart run sqflite_common_ffi_web:setup --force
+
+      - name: Build
+        run: |
+          flutter build web --release --base-href / \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
+            --dart-define=PLATFORM_PUBLIC_KEY="$PLATFORM_PUBLIC_KEY" \
+            --dart-define=FIREBASE_API_KEY="$FIREBASE_API_KEY" \
+            --dart-define=FIREBASE_PROJECT_ID="$FIREBASE_PROJECT_ID" \
+            --dart-define=FIREBASE_SENDER_ID="$FIREBASE_SENDER_ID" \
+            --dart-define=FIREBASE_WEB_APP_ID="$FIREBASE_WEB_APP_ID" \
+            --dart-define=FIREBASE_VAPID_KEY="$FIREBASE_VAPID_KEY" \
+            --dart-define=SUPPORT_WHATSAPP="$SUPPORT_WHATSAPP" \
+            --dart-define=APP_VERSION="1.0.1-web"
+
+      - name: Push notification worker (only when Firebase is configured)
+        run: |
+          if [ -n "$FIREBASE_API_KEY" ] && [ -n "$FIREBASE_WEB_APP_ID" ] && [ -n "$FIREBASE_VAPID_KEY" ]; then
+            sed -e "s|__FIREBASE_API_KEY__|$FIREBASE_API_KEY|" \
+                -e "s|__FIREBASE_PROJECT_ID__|$FIREBASE_PROJECT_ID|" \
+                -e "s|__FIREBASE_SENDER_ID__|$FIREBASE_SENDER_ID|" \
+                -e "s|__FIREBASE_WEB_APP_ID__|$FIREBASE_WEB_APP_ID|" \
+                web_push/firebase-messaging-sw.template.js > build/web/firebase-messaging-sw.js
+            echo "Web push enabled."
+          else
+            echo "Firebase web variables not set: the app works, push notifications stay off."
+          fi
+
+      - name: Prepare for GitHub Pages
+        run: |
+          echo "app.brewistan.com" > build/web/CNAME
+          touch build/web/.nojekyll
+          # Single-page app: unknown paths load the app.
+          cp build/web/index.html build/web/404.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/mobile/build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -3,6 +3,7 @@ import 'package:path/path.dart' as p;
 import 'payload_cipher.dart';
 import 'secure_session_storage.dart';
 import 'b64.dart';
+import 'db_factory.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// Queue payloads are account-bound. Final results are retained without customer QR data.
@@ -30,8 +31,9 @@ class LocalDb {
   }
 
   static Future<LocalDb> open() async {
-    final path = p.join(await getDatabasesPath(), 'brewistan.db');
-    final db = await openDatabase(path, version: 2, onCreate: (db, version) async {
+    final factory = platformDatabaseFactory();
+    final path = p.join(await factory.getDatabasesPath(), 'brewistan.db');
+    final db = await factory.openDatabase(path, options: OpenDatabaseOptions(version: 2, onCreate: (db, version) async {
       await db.execute('CREATE TABLE kv (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
       await db.execute('CREATE TABLE queue (event_id TEXT PRIMARY KEY, type TEXT NOT NULL, qr TEXT NOT NULL, cafe_id TEXT NOT NULL, branch_id TEXT, reward_id TEXT, scanned_at TEXT NOT NULL, created_at INTEGER NOT NULL)');
       await db.execute('CREATE TABLE recent_scans (user_id TEXT NOT NULL, cafe_id TEXT NOT NULL, at INTEGER NOT NULL)');
@@ -40,7 +42,7 @@ class LocalDb {
       await _v2(db);
     }, onUpgrade: (db, oldVersion, newVersion) async {
       if (oldVersion < 2) await _v2(db);
-    });
+    }));
     await db.rawQuery('PRAGMA secure_delete = ON');
     var storedKey = await secureStorage.read(key: 'bw_payload_key_v1');
     if (storedKey == null) {

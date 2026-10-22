@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Build-time configuration, passed with --dart-define (see README).
 class AppConfig {
   static const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
@@ -12,6 +14,9 @@ class AppConfig {
   static const firebaseSenderId = String.fromEnvironment('FIREBASE_SENDER_ID');
   static const firebaseAndroidAppId = String.fromEnvironment('FIREBASE_ANDROID_APP_ID');
   static const firebaseIosAppId = String.fromEnvironment('FIREBASE_IOS_APP_ID');
+  static const firebaseWebAppId = String.fromEnvironment('FIREBASE_WEB_APP_ID');
+  /// Web Push certificate key pair (Firebase console > Cloud Messaging > Web configuration).
+  static const firebaseVapidKey = String.fromEnvironment('FIREBASE_VAPID_KEY');
 
   static const appVersion = String.fromEnvironment('APP_VERSION', defaultValue: '1.0.1');
   static const supportWhatsApp = String.fromEnvironment('SUPPORT_WHATSAPP');
@@ -21,7 +26,8 @@ class AppConfig {
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty && platformPublicKey.isNotEmpty;
 
   static bool get pushConfigured =>
-      firebaseApiKey.isNotEmpty && firebaseProjectId.isNotEmpty && firebaseSenderId.isNotEmpty;
+      firebaseApiKey.isNotEmpty && firebaseProjectId.isNotEmpty && firebaseSenderId.isNotEmpty &&
+      (!kIsWeb || (firebaseWebAppId.isNotEmpty && firebaseVapidKey.isNotEmpty));
 
   /// Offline scanning rules (match the server defaults).
   static const offlineCooldown = Duration(hours: 2);

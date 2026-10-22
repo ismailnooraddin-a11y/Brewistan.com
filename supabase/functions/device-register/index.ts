@@ -10,7 +10,7 @@ interface Body {
   publicKey: string;
   proof: string;
   proofAt: number;
-  platform: 'android' | 'ios';
+  platform: 'android' | 'ios' | 'web';
   deviceId?: string;
   pushToken?: string | null;
   appVersion?: string;
@@ -29,7 +29,7 @@ Deno.serve(handler(async (req) => {
   if (!validKey) {
     throw new HttpError(400, 'invalid_public_key');
   }
-  if (body.platform !== 'android' && body.platform !== 'ios') throw new HttpError(400, 'invalid_platform');
+  if (body.platform !== 'android' && body.platform !== 'ios' && body.platform !== 'web') throw new HttpError(400, 'invalid_platform');
 
   if (!registrationTimeValid(body.proofAt) || typeof body.proof !== 'string') {
     throw new HttpError(400, 'registration_proof_required');

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -79,6 +80,16 @@ class SettingsScreen extends StatelessWidget {
             ),
         ],
         if (state.legacyPending > 0) ListTile(leading: const Icon(Icons.warning_amber), title: Text(state.t('staff.legacyQueue')), subtitle: Text('${state.legacyPending}')),
+        if (kIsWeb)
+          ListTile(
+            leading: const Icon(Icons.notifications_active_outlined),
+            title: Text(state.t('settings.enableNotifications')),
+            onTap: () async {
+              final messenger = ScaffoldMessenger.of(context);
+              final ok = await state.enableWebNotifications();
+              messenger.showSnackBar(SnackBar(content: Text(state.t(ok ? 'settings.notificationsOn' : 'settings.notificationsBlocked'))));
+            },
+          ),
         ListTile(leading:const Icon(Icons.devices),title:Text(state.t('settings.devices')),
           onTap:()=>Navigator.push(context,MaterialPageRoute<void>(builder:(_)=>const DevicesScreen()))),
         ListTile(leading:const Icon(Icons.logout),title:Text(state.t('settings.signout')),onTap:()=>_signOut(context,state)),

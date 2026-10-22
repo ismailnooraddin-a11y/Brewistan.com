@@ -135,4 +135,14 @@ export async function finalRegression(db,ids){
  assert.match(texts,/two branches within 30 minutes/);
  await db.exec('reset role');await as(null);
  console.log('final: scan risk report flags night stamps and two-branch hops, quiet baristas stay green');
+
+ // The web app (PWA) registers devices with platform 'web'; unknown platforms are still refused.
+ await as(null);
+ const webUser=(await one("select id from public.profiles limit 1")).id;
+ const webKey='W'.repeat(43);
+ const reg=(await one("select public.register_device($1,$2,'web',null,null,'1.0.1-web',now()+interval '30 days') r",[webUser,webKey])).r;
+ assert.ok(reg.deviceId);
+ assert.equal((await one('select platform from public.devices where id=$1',[reg.deviceId])).platform,'web');
+ await assert.rejects(db.query("select public.register_device($1,$2,'windows',null,null,'x',now()+interval '30 days')",[webUser,'X'.repeat(43)]),/invalid_registration/);
+ console.log('final: web app devices register; unknown platforms are refused');
 }

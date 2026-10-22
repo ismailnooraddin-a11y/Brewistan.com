@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io' show Platform;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -39,6 +39,19 @@ class AppState extends ChangeNotifier {
   AppPhase phase = AppPhase.loading;
   String lang = 'en';
   WalletData? wallet;
+
+  /// 'web' in the browser app (PWA), otherwise the phone's platform.
+  static String get devicePlatform =>
+      kIsWeb ? 'web' : (defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android');
+
+  /// Web only: asks for notification permission (browsers require a tap first),
+  /// then registers the push token with the server. Returns true when enabled.
+  Future<bool> enableWebNotifications() async {
+    if (!kIsWeb) return true;
+    final ok = await push.requestWebPermission();
+    if (ok) await registerDevice();
+    return ok;
+  }
 
   /// Set when the customer taps a cafe's notification; the home screen opens
   /// that cafe's card once the wallet has it, then clears this.
@@ -171,13 +184,13 @@ class AppState extends ChangeNotifier {
       final claims = jsonDecode(utf8.decode(b64urlDecode(access.split('.')[1]))) as Map;
       final sessionId = claims['session_id'] as String;
       final proofAt = time.nowMs();
-      final platform = Platform.isIOS ? 'ios' : 'android';
+      final platform = devicePlatform;
       final message = jsonEncode(['BW-REGISTER-1', id, sessionId, keys.publicKey, platform, keys.deviceId, token, proofAt]);
       final proof = b64urlEncode(await keys.sign(utf8.encode(message)));
       if (!_current(id, generation)) return;
       final res = await api.call('device-register', body: {
         'proof': proof, 'proofAt': proofAt,
-        'publicKey': keys.publicKey, 'platform': Platform.isIOS ? 'ios' : 'android',
+        'publicKey': keys.publicKey, 'platform': platform,
         'deviceId': keys.deviceId, 'pushToken': token, 'appVersion': AppConfig.appVersion, 'locale': lang,
       });
       if (!_current(id, generation)) return;

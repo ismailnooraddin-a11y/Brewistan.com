@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
@@ -29,6 +30,12 @@ class _StaffGateState extends State<StaffGate> with WidgetsBindingObserver {
 
   Future<void> _unlock() async {
     if (_unlocking) return;
+    if (kIsWeb) {
+      // No fingerprint or PIN check in the browser. Staff mode still locks
+      // again whenever the app goes to the background.
+      setState(() => _unlocked = true);
+      return;
+    }
     setState(() => _unlocking = true);
     final state = context.read<AppState>();
     try {
