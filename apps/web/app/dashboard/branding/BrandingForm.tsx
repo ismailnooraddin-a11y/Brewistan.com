@@ -82,12 +82,12 @@ export function BrandingForm({ cafeId, cafeName, tier, brand, logoUrl }: {
   return (
     <div className="space-y-6">
       {tier === 'signature' && (
-        <p className="rounded-lg border border-ink/10 bg-ink/[0.03] px-4 py-3 text-sm text-ink-muted">
+        <p className="rounded-xl border border-line bg-white px-4 py-3 text-[13.5px] text-ink-muted">
           Design your card below. Want our team to design it for you instead? Upgrade to Bespoke.
         </p>
       )}
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_400px]">
-        <div className="card space-y-7">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+        <div className="card space-y-6">
           <div>
             <label className="label" htmlFor="card-name">Card name</label>
             <input id="card-name" className="input w-full max-w-sm" value={name} maxLength={40} disabled={busy}
@@ -109,7 +109,7 @@ export function BrandingForm({ cafeId, cafeName, tier, brand, logoUrl }: {
                 const active = template === x.id && primary === x.bg && accent === x.fg;
                 return (
                   <button key={x.id} type="button" aria-pressed={active} disabled={busy} onClick={() => applyPreset(x.id)}
-                    className={`h-11 rounded-xl border-2 text-sm font-medium transition ${active ? 'border-gold' : 'border-transparent'}`}
+                    className={`h-10 rounded-md text-[13px] font-medium ring-offset-2 transition-shadow duration-150 ${active ? 'ring-2 ring-gold' : 'ring-1 ring-black/[0.06]'}`}
                     style={{ background: x.bg, color: x.fg }}>
                     {x.name}
                   </button>
@@ -121,13 +121,13 @@ export function BrandingForm({ cafeId, cafeName, tier, brand, logoUrl }: {
           <div>
             <div className="label">Or choose your own colours</div>
             <div className="grid gap-3 sm:grid-cols-2">
-              <label className="flex items-center justify-between rounded-xl border border-ink/10 px-3 py-2 text-sm">
+              <label className="flex h-11 items-center justify-between rounded-md border border-line bg-white px-3 text-[13.5px] text-ink-soft">
                 Card colour
-                <input type="color" className="h-8 w-10 cursor-pointer" value={primary} onChange={(e) => setPrimary(e.target.value)} />
+                <input type="color" className="h-7 w-9 cursor-pointer rounded border-0 bg-transparent p-0" value={primary} onChange={(e) => setPrimary(e.target.value)} />
               </label>
-              <label className="flex items-center justify-between rounded-xl border border-ink/10 px-3 py-2 text-sm">
+              <label className="flex h-11 items-center justify-between rounded-md border border-line bg-white px-3 text-[13.5px] text-ink-soft">
                 Text and stamp colour
-                <input type="color" className="h-8 w-10 cursor-pointer" value={accent} onChange={(e) => setAccent(e.target.value)} />
+                <input type="color" className="h-7 w-9 cursor-pointer rounded border-0 bg-transparent p-0" value={accent} onChange={(e) => setAccent(e.target.value)} />
               </label>
             </div>
             <p className={`mt-2 text-xs ${ratio >= 4.5 ? 'text-ink-muted' : 'text-bad'}`}>
@@ -139,9 +139,9 @@ export function BrandingForm({ cafeId, cafeName, tier, brand, logoUrl }: {
           <button className="btn-primary" onClick={save} disabled={busy}>Publish card</button>
         </div>
 
-        <div className="lg:sticky lg:top-6 lg:self-start">
-          <div className="label">Live preview</div>
-          <div className="flex justify-center rounded-2xl bg-ink/[0.03] px-5 py-8">
+        <div className="xl:sticky xl:top-24 xl:self-start">
+          <div className="label">Live preview · customer app</div>
+          <div className="flex min-h-[320px] items-center justify-center rounded-xl border border-line bg-cream-deep px-6 py-10">
             <CafeCardPreview name={name.trim() || 'Your cafe'} bg={primary} fg={accent} logoUrl={logoUrl} />
           </div>
           <p className="mt-2 text-center text-xs text-ink-muted">Shown with 5 of 8 stamps collected.</p>

@@ -25,18 +25,18 @@ export default async function PushPage({ searchParams }: { searchParams: Promise
     return (
       <>
         <PageHeader title={t('nav.push')} description="Send a message to every customer who has your card." />
-        <div className="card mx-auto max-w-xl text-center">
-          <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-gold/10 text-gold" aria-hidden="true">
-            <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <div className="card mx-auto max-w-lg py-10 text-center">
+          <div className="mx-auto grid h-10 w-10 place-items-center rounded-lg bg-gold-soft text-gold" aria-hidden="true">
+            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
               <path d="M7 11V8a5 5 0 0 1 10 0v3M6 11h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1Z" />
             </svg>
           </div>
-          <h2 className="mt-5 text-2xl font-semibold">Campaigns are a Signature feature</h2>
-          <p className="mx-auto mt-2 max-w-md text-[15px] leading-relaxed text-ink-muted">
+          <h2 className="mt-4 text-[18px] font-semibold">Campaigns are a Signature feature</h2>
+          <p className="mx-auto mt-1.5 max-w-md text-[14px] leading-relaxed text-ink-muted">
             Bring customers back with a message straight to their phone. Signature includes 1 campaign a month,
             Bespoke up to 5.
           </p>
-          <Link href="/dashboard/billing" className="btn-primary mt-6">See plans</Link>
+          <Link href="/dashboard/billing" className="btn-primary mt-5">See plans</Link>
         </div>
       </>
     );
@@ -64,13 +64,13 @@ export default async function PushPage({ searchParams }: { searchParams: Promise
       <div className="card mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="text-[13px] font-medium text-ink-muted">This month</div>
-          <div className="mt-1 font-display text-[28px] font-semibold tracking-tight tabular-nums">
-            {left} <span className="text-lg font-medium text-ink-muted">of {limit} left</span>
+          <div className="mt-1.5 text-[28px] font-semibold leading-none tracking-[-0.02em] tabular-nums">
+            {left} <span className="text-[15px] font-medium text-ink-muted">of {limit} left</span>
           </div>
         </div>
         <div className="flex gap-1.5" aria-hidden="true">
           {Array.from({ length: limit }).map((_, i) => (
-            <span key={i} className={`h-2.5 w-8 rounded-full ${i < used ? 'bg-ink/15' : 'bg-gold'}`} />
+            <span key={i} className={`h-1.5 w-7 rounded-full ${i < used ? 'bg-line' : 'bg-gold'}`} />
           ))}
         </div>
       </div>

@@ -1,4 +1,7 @@
-import { SidebarNav, type NavGroup } from '@/components/SidebarNav';
+import { SidebarNav, CurrentPageLabel, type NavGroup } from '@/components/SidebarNav';
+import { MobileNav } from '@/components/MobileNav';
+import { AccountMenu } from '@/components/AccountMenu';
+import { Wordmark } from '@/components/Wordmark';
 import { getT, requireOwnerContext } from '@/lib/server-context';
 import { LocaleSwitcher } from '@/components/LocaleSwitcher';
 import { CafeSwitcher } from './CafeSwitcher';
@@ -8,7 +11,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const { locale, t } = await getT();
 
   const groups: NavGroup[] = [
-    { items: [{ href: '/dashboard', label: t('nav.overview'), icon: 'overview' }] },
+    { title: t('nav.group.main'), items: [{ href: '/dashboard', label: t('nav.overview'), icon: 'overview' }] },
     {
       title: t('nav.group.marketing'),
       items: [
@@ -36,33 +39,31 @@ export default async function DashboardLayout({ children }: { children: React.Re
       ],
     },
   ];
+  const switcher = <CafeSwitcher cafes={cafes.map((c) => ({ id: c.id, name: c.name }))} current={cafe.id} tier={cafe.tier} />;
 
   return (
-    <div className="min-h-screen lg:flex">
+    <div className="min-h-screen lg:grid lg:grid-cols-[252px_minmax(0,1fr)]">
       <a className="skip-link" href="#main-content">Skip to content</a>
-      <aside className="border-b border-black/[0.06] bg-white/70 backdrop-blur-xl lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-64 lg:shrink-0 lg:flex-col lg:overflow-y-auto lg:border-b-0 lg:border-e">
-        <div className="flex items-center justify-between gap-4 px-5 pb-4 pt-5 lg:block">
-          <div className="font-display text-[22px] font-semibold tracking-tight">Brewistan</div>
-          <div className="min-w-0 lg:mt-4">
-            <CafeSwitcher cafes={cafes.map((c) => ({ id: c.id, name: c.name }))} current={cafe.id} />
-          </div>
+
+      <aside className="hidden border-e border-line bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col">
+        <div className="px-4 pb-4 pt-5">
+          <Wordmark />
+          <div className="mt-5">{switcher}</div>
         </div>
-        <SidebarNav groups={groups} />
-        <div className="hidden px-5 py-6 lg:mt-auto lg:block">
-          <form action="/logout" method="post">
-            <button className="text-sm text-ink-muted hover:text-ink">{t('nav.signout')}</button>
-          </form>
+        <div className="flex-1 overflow-y-auto overscroll-contain px-3 pb-6 [scrollbar-width:thin]">
+          <SidebarNav groups={groups} />
         </div>
       </aside>
-      <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-10 flex items-center justify-end gap-3 border-b border-black/[0.06] bg-cream/75 px-4 py-3 backdrop-blur-xl sm:px-8">
-          <span className="truncate text-sm font-medium text-ink-soft">{cafe.name}</span>
+
+      <div className="min-w-0">
+        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-cream px-4 sm:px-6 lg:px-10">
+          <MobileNav groups={groups} header={<Wordmark />} extra={switcher} />
+          <div className="min-w-0 flex-1"><CurrentPageLabel groups={groups} /></div>
+          <span className="hidden max-w-[220px] truncate text-[13.5px] text-ink-muted md:inline">{cafe.name}</span>
           <LocaleSwitcher current={locale} />
-          <form action="/logout" method="post" className="lg:hidden">
-            <button className="btn-ghost min-h-9 px-4 py-1.5 text-sm">{t('nav.signout')}</button>
-          </form>
+          <AccountMenu name={cafe.name} signOutLabel={t('nav.signout')} />
         </header>
-        <main id="main-content" tabIndex={-1} className="mx-auto min-w-0 max-w-6xl px-4 py-10 sm:px-8">{children}</main>
+        <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-[1200px] px-4 py-8 sm:px-6 lg:px-10 lg:py-10">{children}</main>
       </div>
     </div>
   );

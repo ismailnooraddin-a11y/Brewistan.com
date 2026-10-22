@@ -11,9 +11,9 @@ export interface RiskRow {
 }
 
 const LEVEL = {
-  red: { dot: 'bg-bad', label: 'Needs a look', text: 'text-bad', ring: 'ring-bad/20' },
-  yellow: { dot: 'bg-warn', label: 'Worth checking', text: 'text-warn', ring: 'ring-warn/20' },
-  green: { dot: 'bg-good', label: 'All normal', text: 'text-good', ring: 'ring-black/[0.04]' },
+  red: { dot: 'bg-bad', label: 'Needs a look', text: 'text-bad', ring: 'border-bad/25' },
+  yellow: { dot: 'bg-warn', label: 'Worth checking', text: 'text-warn', ring: 'border-warn/25' },
+  green: { dot: 'bg-good', label: 'All normal', text: 'text-good', ring: 'border-line' },
 } as const;
 
 export function RiskPanel({ rows }: { rows: RiskRow[] }) {
@@ -22,8 +22,8 @@ export function RiskPanel({ rows }: { rows: RiskRow[] }) {
     <section aria-labelledby="risk-title">
       <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h2 id="risk-title" className="text-xl font-semibold">Barista check-up</h2>
-          <p className="mt-1 text-sm text-ink-muted">
+          <h2 id="risk-title" className="text-[17px] font-semibold">Barista check-up</h2>
+          <p className="mt-0.5 max-w-3xl text-[13px] text-ink-muted">
             Last 30 days. We look for unusual patterns: too many stamps in an hour, the same few customers again and again,
             night-time stamps, many brand-new customers in one day, one customer at two branches at once, and heavy offline use.
           </p>
@@ -39,14 +39,14 @@ export function RiskPanel({ rows }: { rows: RiskRow[] }) {
           {rows.map((r) => {
             const l = LEVEL[r.level];
             return (
-              <article key={r.membership_id} className={`rounded-[20px] bg-white p-5 shadow-soft ring-1 ${l.ring}`}>
+              <article key={r.membership_id} className={`rounded-xl border bg-white p-5 ${l.ring}`}>
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <div className="truncate font-medium">{r.display_name || 'Unnamed barista'}</div>
                     <div className="text-[13px] text-ink-muted">{r.stamps} stamps</div>
                   </div>
                   <span className={`inline-flex shrink-0 items-center gap-1.5 text-[13px] font-medium ${l.text}`}>
-                    <span className={`h-2.5 w-2.5 rounded-full ${l.dot}`} aria-hidden="true" />
+                    <span className={`h-2 w-2 rounded-full ${l.dot}`} aria-hidden="true" />
                     {l.label}
                   </span>
                 </div>

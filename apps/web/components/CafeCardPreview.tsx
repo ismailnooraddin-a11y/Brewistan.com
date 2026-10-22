@@ -21,9 +21,9 @@ function Cup({ color, on }: { color: string; on: boolean }) {
 }
 
 export function CafeCardPreview({
-  name, bg, fg, logoUrl, filled = 5, total = 8, goal = 'Free coffee',
+  name, bg, fg, logoUrl, filled = 5, total = 8, goal = 'Free coffee', tag = 'Loyalty',
 }: {
-  name: string; bg: string; fg: string; logoUrl: string | null; filled?: number; total?: number; goal?: string;
+  name: string; bg: string; fg: string; logoUrl: string | null; filled?: number; total?: number; goal?: string; tag?: string;
 }) {
   const light = isLight(bg);
   const initial = name.trim().charAt(0).toUpperCase() || '?';
@@ -73,7 +73,7 @@ export function CafeCardPreview({
           )}
         </div>
         <div className="min-w-0 flex-1 truncate font-card text-[19px] leading-tight">{name}</div>
-        <div className="shrink-0 text-[9px] uppercase tracking-[0.18em] opacity-60">Loyalty</div>
+        <div className="shrink-0 text-[9px] uppercase tracking-[0.18em] opacity-60">{tag}</div>
       </div>
 
       <div className="relative z-[1] my-auto grid grid-cols-4 gap-x-3 gap-y-2.5 px-1 pb-2.5 pt-3.5">

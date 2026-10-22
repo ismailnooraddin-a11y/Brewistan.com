@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { CafeCardPreview } from '@/components/CafeCardPreview';
 
 // Classic cafes don't get a logo or colour choices, those are paid features
 // of Signature and Bespoke. The one thing they can set is how their name
@@ -38,7 +39,7 @@ export function ClassicCardForm({ cafeId, cafeName }: { cafeId: string; cafeName
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
       <div className="card space-y-5">
         <div>
           <label className="label" htmlFor="card-name">Card name</label>
@@ -54,7 +55,7 @@ export function ClassicCardForm({ cafeId, cafeName }: { cafeId: string; cafeName
         </div>
         {msg && <p role="status" className="text-sm text-ink-muted">{msg}</p>}
         <button className="btn-primary" onClick={save} disabled={busy}>Save</button>
-        <p className="border-t border-ink/10 pt-4 text-sm text-ink-muted">
+        <p className="border-t border-line pt-4 text-[13.5px] text-ink-muted">
           The card's colour changes on its own as each customer collects more stamps, from bronze to silver, gold and
           matte black. Upgrade to Signature to add your logo and choose a premium template, or Bespoke for a fully
           custom card designed by our team.
@@ -62,17 +63,9 @@ export function ClassicCardForm({ cafeId, cafeName }: { cafeId: string; cafeName
       </div>
 
       <div>
-        <div className="label">Preview</div>
-        <div className="rounded-xl border border-ink/10 bg-[#6E4423] p-5 text-[#F3E9DD]">
-          <div className="flex items-center justify-between">
-            <span className="font-card text-lg">{name.trim() || 'Your cafe'}</span>
-            <span className="rounded-full border border-white/20 px-2.5 py-0.5 text-[10px] tracking-wide">BRONZE</span>
-          </div>
-          <div className="mt-6 grid grid-cols-4 gap-1.5">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="aspect-square rounded-md bg-current" style={{ opacity: i < 3 ? 0.95 : 0.2 }} />
-            ))}
-          </div>
+        <div className="label">Live preview · customer app</div>
+        <div className="flex min-h-[320px] items-center justify-center rounded-xl border border-line bg-cream-deep px-6 py-10">
+          <CafeCardPreview name={name.trim() || 'Your cafe'} bg="#6E4423" fg="#F3E9DD" logoUrl={null} filled={3} tag="Bronze" />
         </div>
         <p className="mt-2 text-xs text-ink-muted">Shown here at a new customer's starting tier.</p>
       </div>

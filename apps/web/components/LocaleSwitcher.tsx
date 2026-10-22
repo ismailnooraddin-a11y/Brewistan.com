@@ -8,7 +8,7 @@ export function LocaleSwitcher({ current }: { current: Locale }) {
   return (
     <select
       aria-label="Language"
-      className="rounded-lg border border-ink/15 bg-white px-2 py-1.5 text-sm"
+      className="h-8 rounded-md border border-line bg-white px-2 text-[13px] text-ink-soft outline-none hover:border-[#d6dad5] focus:border-gold"
       value={current}
       onChange={(e) => {
         document.cookie = `${LOCALE_COOKIE}=${e.target.value}; path=/; max-age=31536000; samesite=lax`;

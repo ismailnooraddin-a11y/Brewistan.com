@@ -43,7 +43,7 @@ export function DailyChart({ data, title }: { data: Point[]; title: string }) {
               aria-label={`${label(d.day)}: ${d.stamps} stamps, ${d.redemptions} redeemed`}
             >
               <span
-                className={`block w-full rounded-t-[4px] transition-colors ${hover === i ? 'bg-gold-deep' : 'bg-gold'}`}
+                className={`block w-full rounded-t-[4px] transition-colors ${hover === i ? 'bg-gold' : 'bg-gold/45'}`}
                 style={{ height: `${(d.stamps / niceMax) * 100}%`, minHeight: d.stamps ? 2 : 0 }}
               />
             </button>
