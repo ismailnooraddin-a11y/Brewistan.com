@@ -1,3 +1,9 @@
+## 2026-10-23 — Nana’s Tea premium scene experiment and logo preview
+
+- Nana-only premium detail backdrop uses the supplied tea-room photograph; opt-in test for Signature, automatic for Bespoke. The all-cards list and QR retain the existing fast, scannable layout.
+- The owner branding form previews the selected logo immediately, publishes a newly versioned storage path, and handles errors without falsely showing an unsaved logo.
+- Added `NANA_SCENE_AND_LOGO_FIX.md` and isolated source checks.
+
 # 2026-10-23 - Integrated public website
 
 - Added a responsive, dependency-free public marketing website with an interactive

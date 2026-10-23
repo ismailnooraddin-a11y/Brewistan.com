@@ -3,7 +3,7 @@ import { contrastRatio } from '@/lib/validation';
 import { CARD_DESIGNS, cardDesignById } from '@/lib/card-designs';
 import { CafeCardPreview } from '@/components/CafeCardPreview';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
@@ -13,6 +13,10 @@ export function BrandingForm({ cafeId, cafeName, tier, brand, logoUrl }: {
   const router = useRouter();
   const supabase = createClient();
   const [name, setName] = useState(cafeName);
+  // A prop-only logo would stay stale after uploading because the component is
+  // retained across router.refresh(). Keep the preview in client state.
+  const [previewLogoUrl, setPreviewLogoUrl] = useState<string | null>(logoUrl);
+  useEffect(() => { setPreviewLogoUrl(logoUrl); }, [logoUrl]);
   const [template, setTemplate] = useState(cardDesignById(brand.template).id);
   const [primary, setPrimary] = useState(brand.primary ?? cardDesignById(brand.template).bg);
   const [accent, setAccent] = useState(brand.accent ?? cardDesignById(brand.template).fg);
@@ -20,6 +24,7 @@ export function BrandingForm({ cafeId, cafeName, tier, brand, logoUrl }: {
   const [busy, setBusy] = useState(false);
 
   async function uploadLogo(file: File) {
+    if (busy) return;
     if (file.size > 1_000_000) {
       setMsg('Logo must be under 1 MB.');
       return;
@@ -28,26 +33,45 @@ export function BrandingForm({ cafeId, cafeName, tier, brand, logoUrl }: {
       setMsg('Use a PNG, WebP or JPEG logo, ideally on a transparent background.');
       return;
     }
-    if (busy) return;
+    // Reflect the selected image instantly, while the upload/save is pending.
+    // Failure restores the previous persisted logo rather than keeping an
+    // unsaved image visible as if it had been published.
+    const previous = previewLogoUrl;
+    const temporary = URL.createObjectURL(file);
+    setPreviewLogoUrl(temporary);
     setBusy(true);
-    setMsg(null);
+    setMsg('Saving your new logo…');
+    let succeeded = false;
     try {
       const ext = ({ 'image/png': 'png', 'image/webp': 'webp', 'image/jpeg': 'jpg' } as Record<string, string>)[file.type];
-      const path = `${cafeId}/logo-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from('branding').upload(path, file, { upsert: false, contentType: file.type });
-      let saveError: { message: string } | null = error;
-      if (!error) {
-        const result = await supabase.from('cafes').update({ logo_path: path }).eq('id', cafeId).select('id').single();
-        saveError = result.error;
-        if (saveError) await supabase.storage.from('branding').remove([path]);
+      // A new immutable storage path avoids stale CDN/browser logo caching.
+      const path = `${cafeId}/logo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from('branding').upload(path, file, {
+        upsert: false, contentType: file.type,
+      });
+      if (uploadError) throw uploadError;
+      const { error: saveError } = await supabase.from('cafes').update({ logo_path: path })
+        .eq('id', cafeId).select('id').single();
+      if (saveError) {
+        await supabase.storage.from('branding').remove([path]);
+        throw saveError;
       }
-      setMsg(saveError ? 'The logo could not be saved. Please retry.' : 'Logo updated.');
+      const { data } = supabase.storage.from('branding').getPublicUrl(path);
+      setPreviewLogoUrl(data.publicUrl);
+      setMsg('Logo published. The customer card will show it after its next refresh.');
+      succeeded = true;
       router.refresh();
     } catch {
+      setPreviewLogoUrl(previous);
       setMsg('The logo could not be saved. Please retry.');
     } finally {
+      // Release memory even when upload fails or the user selects another logo.
+      URL.revokeObjectURL(temporary);
       setBusy(false);
     }
+    // Keep an explicit success state so a failed publish cannot be mistaken for
+    // a saved change by a subsequent input selection.
+    if (!succeeded) return;
   }
 
   function applyPreset(designId: string) {
@@ -98,7 +122,7 @@ export function BrandingForm({ cafeId, cafeName, tier, brand, logoUrl }: {
           <div>
             <label className="label" htmlFor="logo">Logo</label>
             <input id="logo" className="max-w-full text-sm" type="file" accept="image/png,image/webp,image/jpeg" disabled={busy}
-              onChange={(e) => e.target.files?.[0] && uploadLogo(e.target.files[0])} />
+              onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadLogo(file); e.target.value = ''; }} />
             <p className="mt-1 text-xs text-ink-muted">PNG, WebP or JPEG under 1 MB. A square logo on a transparent background looks best.</p>
           </div>
 
@@ -142,7 +166,7 @@ export function BrandingForm({ cafeId, cafeName, tier, brand, logoUrl }: {
         <div className="xl:sticky xl:top-24 xl:self-start">
           <div className="label">Live preview · customer app</div>
           <div className="flex min-h-[320px] items-center justify-center rounded-xl border border-line bg-cream-deep px-6 py-10">
-            <CafeCardPreview name={name.trim() || 'Your cafe'} bg={primary} fg={accent} logoUrl={logoUrl} />
+            <CafeCardPreview name={name.trim() || 'Your cafe'} bg={primary} fg={accent} logoUrl={previewLogoUrl} />
           </div>
           <p className="mt-2 text-center text-xs text-ink-muted">Shown with 5 of 8 stamps collected.</p>
         </div>
