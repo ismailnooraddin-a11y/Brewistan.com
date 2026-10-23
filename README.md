@@ -1,3 +1,8 @@
+> **Public website update - 23 October 2026:** The public marketing site is now included
+> in `apps/web/public/website`, served by the existing Next.js project. Read
+> [WEBSITE_SETUP.md](WEBSITE_SETUP.md) before changing Vercel domains. This release
+> preserves the customer PWA, owner dashboard, admin panel and prior hotfixes.
+
 # Brewistan
 
 Digital loyalty platform for luxury cafes in Iraq: one Flutter app for customers and baristas, a Next.js customer PWA at `app.brewistan.com`, a web dashboard for cafe owners at `dashboard.brewistan.com`, an admin panel at `admin.brewistan.com`, and a Supabase backend.

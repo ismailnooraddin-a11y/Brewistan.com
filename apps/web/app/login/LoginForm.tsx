@@ -21,7 +21,7 @@ function toE164(input: string): string {
   return '+' + digits;
 }
 
-export function LoginForm({ labels }: { labels: Labels }) {
+export function LoginForm({ labels, postLoginPath = '/dashboard' }: { labels: Labels; postLoginPath?: '/' | '/dashboard' | '/onboarding' }) {
   const supabase = createClient();
   const [phone, setPhone] = useState('');
   const [method, setMethod] = useState<'phone' | 'email'>('phone');
@@ -62,7 +62,7 @@ export function LoginForm({ labels }: { labels: Labels }) {
         ? await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: asciiDigits(code).trim(), type: 'email' })
         : await supabase.auth.verifyOtp({ phone: toE164(phone), token: asciiDigits(code).trim(), type: 'sms' });
       if (error) { setError(error.message); return; }
-      window.location.href = '/';
+      window.location.href = postLoginPath;
     } catch { setError('Unable to connect. Please try again.'); }
     finally { setBusy(false); }
   }

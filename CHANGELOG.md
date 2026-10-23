@@ -1,3 +1,19 @@
+# 2026-10-23 - Integrated public website
+
+- Added a responsive, dependency-free public marketing website with an interactive
+  stamp demo, three design previews, connected-product diagram, plans and FAQs.
+- All public signup calls to action lead to cafe-owner onboarding. Customer and
+  barista access remain in their existing QR and owner-assigned workflows.
+- Kept the PWA, owner dashboard and admin root routing separate; public landing
+  requests no longer need an authentication/database lookup.
+- Added fixed post-login destinations for cafe signup, normal owner login and admin
+  login. No account roles or approval checks are changed by a signup URL.
+- Added marketing-only CSP, canonical/social metadata, a social preview image,
+  public-host robots responses, private-host noindex guidance and a sitemap.
+- Added 22 website regression tests to CI. No new packages or SQL migrations.
+- Added a safe domain-move guide. Current website timings are explicitly targets;
+  native OS Wallet passes and plastic cards are explicitly planned integrations.
+
 ## 2026-10-23 — Compact premium PWA and reliability repair (source candidate)
 
 - Compact luxury loyalty cards for Classic, Signature, and Bespoke; full card and rotating QR on the detailed view. Native wallet gets a compact list treatment.

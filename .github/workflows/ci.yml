@@ -46,7 +46,7 @@ jobs:
         with:
           node-version: 22
       - run: npm ci
-      - run: node --test ../../scripts/audit-checks.mjs ../../scripts/final-checks.mjs
+      - run: node --test ../../scripts/audit-checks.mjs ../../scripts/final-checks.mjs ../../scripts/website-checks.mjs
       - run: node ../../scripts/typecheck-helpers.mjs
       - run: python3 ../../scripts/audit-platform-checks.py
       - run: npm run build

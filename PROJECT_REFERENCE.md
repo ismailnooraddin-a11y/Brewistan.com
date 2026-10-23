@@ -15,12 +15,13 @@ Last updated: October 2026.
 | Customer app (PWA) + barista scanner | Customers, baristas | `https://app.brewistan.com` | `apps/web` (routes `/c/...`, `/cards`, `/scan`) |
 | Café owner dashboard | Café owners | `https://dashboard.brewistan.com` | `apps/web` (`/dashboard`, `/onboarding`) |
 | Admin panel | Brewistan team | `https://admin.brewistan.com` | `apps/web` (`/admin`) |
-| Public website | Everyone (planned) | `https://brewistan.com` | not built yet |
+| Public website | Cafe owners and prospective cafes | `https://brewistan.com` | `apps/web/public/website` via middleware |
 | Backend: database, login, functions | all of the above | Supabase project `ybcdphsjyzjsjrarwiof` | `supabase/` |
 | Native mobile app (later) | Customers, baristas | Google Play / App Store | `apps/mobile` (Flutter) |
 
-The customer app, dashboard and admin panel are **one Next.js website** (`apps/web`) served on
-three addresses. The server decides which part to show from the address.
+The public website, customer app, dashboard and admin panel share **one Next.js project**
+(`apps/web`). Middleware selects the root experience by host. See `WEBSITE_SETUP.md` for
+the exact routing matrix and the required one-time public-domain move.
 
 ---
 
@@ -39,6 +40,12 @@ Domain `brewistan.com` is managed in **Cloudflare**. All Vercel records must be 
 
 **Important:** `brewistan.com` is currently attached to an **old Vercel project**, so it shows an
 old page. Customer QR codes must use `app.brewistan.com`.
+
+For the new website, deploy and verify `brewistan-com-l2as` first, then move `brewistan.com`
+and `www.brewistan.com` to that project using Vercel Settings > Domains. Do not delete
+the source project first. Set the apex domain to Production (not a redirect) and redirect
+`www` to the apex. Preserve app/admin/dashboard domains and all mail records. Use the
+DNS values currently shown in the destination project, not the historical examples above.
 
 After adding a record, a computer may cache the old answer for a while. Fix: `ipconfig /flushdns`
 (Windows) or test on mobile data.
@@ -74,8 +81,10 @@ Changing any `NEXT_PUBLIC_…` value requires **Deployments > ⋯ > Redeploy**.
 
 ### Other Vercel projects
 `brewistan-com`, `brewistan`, `brewistan-ikma`, `c-vistan`, etc. are older or unrelated projects.
-`brewistan-com` is connected to the same repository and fails on every push: **Settings > Git >
-Disconnect** it (safe; deletes nothing).
+`brewistan-com` is a legacy project that still has the public domains attached in the
+provided screenshots. Do not delete it before moving and verifying both public domains
+on `brewistan-com-l2as`. Once no needed domains remain, disconnect its Git integration
+or retire it. See `WEBSITE_SETUP.md`.
 
 ---
 

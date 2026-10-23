@@ -1,3 +1,9 @@
+## New: the integrated Brewistan website
+
+For this website release, start with [WEBSITE_SETUP.md](WEBSITE_SETUP.md).
+Do not import a separate standalone website or delete the old Vercel project yet.
+The website lives in the existing `apps/web` project with host-based routing.
+
 **2026-10-23 source update:** Read [UPDATE_2026-10-23.md](UPDATE_2026-10-23.md) first. The older release notes below describe the original source history and do not certify these new changes.
 
 **Complete reference for the whole project (domains, hosting, settings, secrets, workflows): `PROJECT_REFERENCE.md`.**
