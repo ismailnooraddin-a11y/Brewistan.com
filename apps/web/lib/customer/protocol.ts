@@ -2,6 +2,14 @@
 // Must match supabase/functions/_shared/crypto.ts and device-proof.ts exactly;
 // supabase/functions/_tests/web_protocol_test.ts checks this against the server code.
 
+// Kept self-contained so the same QR protocol module runs in Next.js and Deno.
+function asciiPhoneDigits(value: string): string {
+  return value.replace(/[\u0660-\u0669\u06f0-\u06f9]/g, (digit) => {
+    const code = digit.charCodeAt(0);
+    return String(code >= 0x06f0 ? code - 0x06f0 : code - 0x0660);
+  });
+}
+
 export const QR_WINDOW_SECONDS = 30;
 
 export function b64urlEncode(bytes: Uint8Array): string {
@@ -60,7 +68,7 @@ export function sessionIdFromAccessToken(token: string): string | null {
 
 /** Iraqi numbers by default: 0750 123 4567, 750 123 4567, +964 750..., 00964 750... -> +9647501234567. */
 export function toE164(input: string): string | null {
-  let d = input.replace(/[^\d+]/g, '');
+  let d = asciiPhoneDigits(input).replace(/[^\d+]/g, '');
   if (d.startsWith('00')) d = '+' + d.slice(2);
   if (d.startsWith('+')) return /^\+[1-9]\d{7,14}$/.test(d) ? d : null;
   if (d.startsWith('0')) d = d.slice(1);

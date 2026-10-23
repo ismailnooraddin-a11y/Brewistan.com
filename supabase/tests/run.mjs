@@ -78,8 +78,13 @@ await db.query(`update public.memberships set activated_at = now() - interval '3
 
 // Explicit evidence-backed fixture history for scans taken before this fixture's creation.
 await db.query("insert into public.subscription_entitlements(cafe_id,starts_at,ends_at,source) values($1,now()-interval '7 days',now()+interval '14 days','test_evidence')",[cafe.id]);
-// Stamps: 8 stamps two hours apart complete a puzzle
+// Stamps: 8 stamps two hours apart complete a puzzle.
+// These fixture scans are backdated 40 hours. The cafe's real campaign must
+// also predate the scans; otherwise the historical offline guard correctly
+// rejects the offline event as 'no_campaign', rather than reaching cooldown.
 const base = Date.now() - 40 * 3600 * 1000;
+await db.query('update public.campaigns set created_at = $2::timestamptz where cafe_id = $1 and active',
+  [cafe.id, new Date(base - 60_000).toISOString()]);
 const stamp = (i, offline = false, staff = barista, user = customer, eventId = uuid()) =>
   one(`select public.process_stamp($1,$2,$3,$4,$5,null,$6,$7) as r`,
     [eventId, user, cafe.id, branch.id, staff, new Date(base + i * 2.5 * 3600 * 1000).toISOString(), offline]).then((x) => x.r);
@@ -97,9 +102,11 @@ const b = await stamp(9, false, barista, customer, ev);
 assert.equal(a.status, 'accepted');
 assert.equal(b.duplicate, true);
 
-// Cooldown (same time window) online -> rejected, offline -> voided
+// Cooldown (same time window) online -> rejected, offline -> voided.
 assert.equal((await stamp(9.2)).reason, 'cooldown');
-assert.equal((await stamp(9.3, true)).status, 'voided');
+const offlineCooldown = await stamp(9.3, true);
+assert.equal(offlineCooldown.status, 'voided');
+assert.equal(offlineCooldown.reason, 'cooldown');
 
 // Self scan and staff account
 assert.equal((await stamp(12, false, barista, barista)).reason, 'self_scan');
@@ -161,5 +168,7 @@ const { auditRegression } = await import('./audit-regression.mjs');
 await auditRegression(db, {owner,barista,customer,admin,cafe:cafe.id,branch:branch.id,membership:m.id});
 const { finalRegression }=await import('./final-regression.mjs');
 await finalRegression(db,{owner,barista,customer,admin,cafe:cafe.id,branch:branch.id});
+const { updateRegression } = await import('./update-regression.mjs');
+await updateRegression(db, {owner,barista,customer,cafe:cafe.id});
 console.log('All database checks passed.');
 await db.close();

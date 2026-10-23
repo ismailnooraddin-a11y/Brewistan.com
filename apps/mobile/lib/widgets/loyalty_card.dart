@@ -19,9 +19,11 @@ class LoyaltyCard extends StatelessWidget {
     this.archivedText,
     this.onTap,
     this.now,
+    this.compact = false,
   });
 
   final DateTime? now;
+  final bool compact;
   final CafeCard card;
   final String customerTier;
   final String tierLabel;
@@ -50,7 +52,78 @@ class LoyaltyCard extends StatelessWidget {
     final fg = _readable(look.background, look.foreground);
     return Opacity(
       opacity: card.archived ? 0.55 : 1,
-      child: look.branded ? _branded(look.background.first, fg) : _classic(look.background, fg),
+      child: compact ? _compact(look.background, fg, look.branded)
+        : look.branded ? _branded(look.background.first, fg) : _classic(look.background, fg),
+    );
+  }
+
+  // Dense wallet item, intentionally identical quality for all packages. The
+  // expanded card and QR remain on the next screen: five cafes fit gracefully.
+  Widget _compact(List<Color> backgrounds, Color fg, bool branded) {
+    final bg = backgrounds.first;
+    final total = card.stampsRequired.clamp(1, 20).toInt();
+    final filled = card.stampsInCurrent.clamp(0, total).toInt();
+    final light = bg.computeLuminance() > 0.5;
+    return Material(
+      borderRadius: BorderRadius.circular(19),
+      clipBehavior: Clip.antiAlias,
+      color: bg,
+      child: Ink(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(19),
+          gradient: LinearGradient(colors: backgrounds, begin: Alignment.topLeft, end: Alignment.bottomRight),
+          border: Border.all(color: fg.withValues(alpha: light ? 0.25 : 0.34)),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(17, 16, 17, 14),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Row(children: [
+                Container(
+                  height: 38, width: 38,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(11),
+                    color: fg.withValues(alpha: 0.07),
+                    border: Border.all(color: fg.withValues(alpha: 0.25)),
+                  ),
+                  child: Center(child: card.logoUrl != null && branded
+                    ? ClipRRect(borderRadius: BorderRadius.circular(9), child: Image.network(card.logoUrl!, fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => Text(card.name.isNotEmpty ? card.name[0] : 'B', style: TextStyle(color: fg, fontSize: 19))))
+                    : Text(card.name.isNotEmpty ? card.name[0].toUpperCase() : 'B', style: TextStyle(color: fg, fontSize: 19))),
+                ),
+                const SizedBox(width: 11),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(card.name, maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: fg, fontSize: 18, fontWeight: FontWeight.w600, letterSpacing: -0.4)),
+                  Text(tierLabel.toUpperCase(), maxLines: 1,
+                    style: TextStyle(color: fg.withValues(alpha: .65), fontSize: 9.5, letterSpacing: 1.4)),
+                ])),
+                const SizedBox(width: 10),
+                Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                  Text('STAMPS', style: TextStyle(fontSize: 9, letterSpacing: 1.5, color: fg.withValues(alpha: .65))),
+                  Text('$filled / $total', style: TextStyle(color: fg, fontSize: 19, fontWeight: FontWeight.w600)),
+                ]),
+              ]),
+              const SizedBox(height: 14),
+              Row(children: List.generate(total, (i) => Expanded(child: Container(
+                height: 5, margin: const EdgeInsetsDirectional.only(end: 3),
+                decoration: BoxDecoration(color: fg.withValues(alpha: i < filled ? .95 : .17),
+                  borderRadius: BorderRadius.circular(5)),
+              )))),
+              const SizedBox(height: 10),
+              Row(children: [
+                Expanded(child: Text(goalText ?? '', maxLines: 1, overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: fg.withValues(alpha: .83), fontSize: 11.5))),
+                const SizedBox(width: 8),
+                if (_hasReward) Text(rewardText, maxLines: 1,
+                  style: TextStyle(color: fg, fontWeight: FontWeight.w600, fontSize: 11)),
+                if (card.archived && archivedText != null) Text(archivedText!, style: TextStyle(color: fg, fontSize: 11)),
+              ]),
+            ]),
+          ),
+        ),
+      ),
     );
   }
 

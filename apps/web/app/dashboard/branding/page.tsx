@@ -11,9 +11,9 @@ export default async function BrandingPage() {
     <>
       <PageHeader title={t('nav.branding')} description="How your card looks in the customer app." />
       {cafe.tier === 'classic' ? (
-        <ClassicCardForm cafeId={cafe.id} cafeName={cafe.name} />
+        <ClassicCardForm key={cafe.id} cafeId={cafe.id} cafeName={cafe.name} />
       ) : (
-        <BrandingForm cafeId={cafe.id} cafeName={cafe.name} tier={cafe.tier} brand={cafe.brand ?? {}} logoUrl={logoUrl} />
+        <BrandingForm key={cafe.id} cafeId={cafe.id} cafeName={cafe.name} tier={cafe.tier} brand={cafe.brand ?? {}} logoUrl={logoUrl} />
       )}
     </>
   );

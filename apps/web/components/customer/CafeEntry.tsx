@@ -5,7 +5,6 @@ import { CafeCardPreview } from '@/components/CafeCardPreview';
 import { cardLook, logoUrl } from '@/lib/customer/look';
 import { pickLabel } from '@/lib/customer/strings';
 import { customerClient } from '@/lib/customer/supabase';
-import { ensureDevice } from '@/lib/customer/device';
 import { useCustomerText } from './CustomerProvider';
 import { useCustomer } from './useCustomer';
 import { PhoneAuth } from './PhoneAuth';
@@ -38,7 +37,6 @@ export function CafeEntry({ page }: { page: PublicCafePage }) {
       const { error: err } = await customerClient().rpc('join_cafe', { p_cafe: page.cafeId });
       if (err) { started.current = false; setError(/cafe_unavailable/.test(err.message) ? t('cafeNotFound') : t('genericError')); return; }
       // Prepare the rotating code in the background; the card page retries if this fails.
-      try { await ensureDevice(customer.user!.id, lang); } catch { /* retried on the card page */ }
       router.replace(`/cards/${page.cafeId}`);
     })();
   }, [customer.status, customer.profileComplete, customer.user, page.cafeId, router, t, lang]);
@@ -51,7 +49,7 @@ export function CafeEntry({ page }: { page: PublicCafePage }) {
         <h1 className="mt-1 text-[24px] font-semibold tracking-[-0.01em]">{page.name}</h1>
       </div>
       <div className="mt-6 flex justify-center">
-        <CafeCardPreview name={page.name} bg={look.bg} fg={look.fg} logoUrl={logoUrl(page.logoPath)} filled={0}
+        <CafeCardPreview name={page.name} bg={look.bg} fg={look.fg} logoUrl={page.tier === 'classic' ? null : logoUrl(page.logoPath)} filled={0}
           total={page.stampsRequired} goal={reward} tag={look.tag} footer={t('moreFor', { n: page.stampsRequired, reward })} />
       </div>
       <p className="mt-5 text-center text-[14px] cx-muted">{t('welcomeBody')}</p>
@@ -59,8 +57,9 @@ export function CafeEntry({ page }: { page: PublicCafePage }) {
       <section className="cx-surface mt-6 p-5">
         {customer.status === 'loading' && <Spinner label="…" />}
         {customer.status === 'signedOut' && <PhoneAuth onSignedIn={customer.refresh} />}
-        {customer.status === 'signedIn' && !customer.profileComplete && <ProfileForm onDone={customer.refresh} />}
-        {customer.status === 'signedIn' && customer.profileComplete && !error && <Spinner label={t('openingCard')} />}
+        {customer.status === 'signedIn' && customer.profileComplete === null && <p className="text-center text-[13px] cx-muted">Unable to check registration while offline. <button className="cx-link" onClick={customer.refresh}>Retry</button></p>}
+        {customer.status === 'signedIn' && customer.profileComplete === false && <ProfileForm onDone={customer.refresh} />}
+        {customer.status === 'signedIn' && customer.profileComplete === true && !error && <Spinner label={t('openingCard')} />}
         {error && <p role="alert" className="text-center text-[14px] text-[#e8857a]">{error}</p>}
       </section>
     </main>

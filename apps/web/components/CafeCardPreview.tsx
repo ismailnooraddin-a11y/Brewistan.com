@@ -1,111 +1,102 @@
-// The Signature / Bespoke card as customers see it in the app: the cafe's own
-// colour (never blended with the accent), a metallic hairline edge, the logo in
-// a thin ring, coffee-cup stamps pressed into the card and a progress line.
-// Keep this in step with apps/mobile/lib/widgets/loyalty_card.dart.
+/**
+ * Brewistan card surfaces. Classic is deliberately as refined as the paid tiers;
+ * plan entitlement controls colours, logo and templates, not visual quality.
+ * 'compact' is for an easy-to-scan wallet with many cards, 'full' for a card page.
+ * QR codes remain outside this preview; a printed/OS Wallet pass has its own layout.
+ */
+export type CardDensity = 'compact' | 'full';
 
 function isLight(hex: string): boolean {
+  if (!/^#[0-9a-f]{6}$/i.test(hex)) return false;
   const n = parseInt(hex.slice(1), 16);
   const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
   return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.6;
 }
 
-function Cup({ color, on }: { color: string; on: boolean }) {
-  const a = on ? 1 : 0.16;
+function Cup({ color, filled }: { color: string; filled: boolean }) {
   return (
-    <svg viewBox="0 0 40 40" className="h-[62%] w-[62%]" aria-hidden="true">
-      <path d="M10 12 h18 v14 a6 6 0 0 1 -6 6 h-6 a6 6 0 0 1 -6 -6 Z" fill={color} fillOpacity={a} />
-      <path d="M28 15 a4.5 5 0 0 1 0 9" stroke={color} strokeOpacity={a} strokeWidth="2.6" fill="none" strokeLinecap="round" />
-      <path d="M9 34 h20" stroke={color} strokeOpacity={a * 0.7} strokeWidth="2" strokeLinecap="round" />
+    <svg viewBox="0 0 28 28" className="h-[56%] w-[56%]" fill="none" aria-hidden="true">
+      <path d="M6.7 7.5h13v10.2a5 5 0 0 1-5 5h-3a5 5 0 0 1-5-5V7.5Z" fill={filled ? color : 'none'} stroke={color} strokeWidth="1.4" strokeLinejoin="round" />
+      <path d="M19.8 9h2a3.3 3.3 0 0 1 0 6.6h-2M6.7 24.5h16" stroke={color} strokeWidth="1.4" strokeLinecap="round" />
     </svg>
   );
 }
 
 export function CafeCardPreview({
   name, bg, fg, logoUrl, filled = 5, total = 8, goal = 'Free coffee', tag = 'Loyalty', footer,
+  density = 'full',
 }: {
-  name: string; bg: string; fg: string; logoUrl: string | null; filled?: number; total?: number; goal?: string; tag?: string;
-  /** Overrides the progress text on the right (used for translated text in the customer app). */
-  footer?: string;
+  name: string; bg: string; fg: string; logoUrl: string | null;
+  filled?: number; total?: number; goal?: string; tag?: string; footer?: string; density?: CardDensity;
 }) {
   const light = isLight(bg);
-  const initial = name.trim().charAt(0).toUpperCase() || '?';
-  const left = total - filled;
+  const initial = name.trim().charAt(0).toUpperCase() || 'B';
+  const count = Math.min(20, Math.max(0, Math.round(total)));
+  const stamped = Math.min(count, Math.max(0, Math.round(filled)));
+  const left = Math.max(0, total - filled);
+  const label = footer ?? (left <= 0 ? `Reward ready · ${goal}` : `${left} more · ${goal}`);
+  const edge = `color-mix(in srgb, ${fg} ${light ? 27 : 34}%, transparent)`;
+
   return (
     <div
       role="img"
-      aria-label={`${name} loyalty card, ${filled} of ${total} stamps`}
-      className="relative flex w-full max-w-[380px] flex-col overflow-hidden rounded-[20px] px-[22px] pb-[18px] pt-[22px]"
+      aria-label={`${name}: ${filled} of ${total} stamps. ${label}`}
+      className={`relative isolate w-full overflow-hidden ${density === 'compact'
+        ? 'rounded-[19px] px-[18px] py-[17px] sm:px-[20px]'
+        : 'max-w-[390px] rounded-[22px] px-[21px] pb-[19px] pt-[20px] sm:px-[24px]'}`}
       style={{
-        aspectRatio: '1.586',
         color: fg,
-        border: '1px solid transparent',
-        background: `linear-gradient(${bg}, ${bg}) padding-box, linear-gradient(135deg, color-mix(in srgb, ${fg} 55%, transparent), color-mix(in srgb, ${fg} 12%, transparent) 40%, color-mix(in srgb, ${fg} 40%, transparent) 70%, color-mix(in srgb, ${fg} 10%, transparent)) border-box`,
+        background: bg,
+        border: `1px solid ${edge}`,
         boxShadow: light
-          ? '0 22px 44px -22px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.08)'
-          : '0 22px 44px -20px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.14)',
+          ? '0 12px 30px -18px rgba(0,0,0,.28), 0 2px 5px rgba(0,0,0,.08)'
+          : '0 16px 32px -19px rgba(0,0,0,.52), inset 0 1px rgba(255,255,255,.08)',
       }}
     >
-      {/* Same-colour depth only: a whisper of light from the top, a soft shade at the bottom. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background: light
-            ? 'radial-gradient(120% 80% at 30% -10%, rgba(255,255,255,0.55), transparent 60%), radial-gradient(90% 70% at 100% 110%, rgba(0,0,0,0.06), transparent 65%)'
-            : 'radial-gradient(120% 80% at 30% -10%, rgba(255,255,255,0.07), transparent 60%), radial-gradient(90% 70% at 100% 110%, rgba(0,0,0,0.22), transparent 65%)',
-        }}
-      />
-      {/* Inner frame. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-[9px] rounded-[13px]"
-        style={{ border: `1px solid color-mix(in srgb, ${fg} 13%, transparent)` }}
-      />
-
-      <div className="relative z-[1] flex items-center gap-[11px]">
-        <div
-          className="grid h-[34px] w-[34px] shrink-0 place-items-center overflow-hidden rounded-full p-[3px]"
-          style={{ border: `1px solid color-mix(in srgb, ${fg} 50%, transparent)` }}
-        >
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0"
+        style={{ background: light
+          ? 'linear-gradient(148deg,rgba(255,255,255,.19),transparent 55%,rgba(0,0,0,.04))'
+          : 'linear-gradient(148deg,rgba(255,255,255,.075),transparent 55%,rgba(0,0,0,.15))' }} />
+      <div className="relative flex min-w-0 items-center gap-3">
+        <div className={`grid shrink-0 place-items-center overflow-hidden rounded-[11px] ${density === 'compact' ? 'h-10 w-10' : 'h-[45px] w-[45px]'}`}
+          style={{ border: `1px solid ${edge}`, background: `color-mix(in srgb, ${fg} 7%, transparent)` }}>
           {logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={logoUrl} alt="" className="h-full w-full rounded-full object-contain" />
-          ) : (
-            <span className="font-card text-base">{initial}</span>
-          )}
+            <img src={logoUrl} alt="" className="h-full w-full object-contain p-1" />
+          ) : <span className="font-card text-[19px] font-medium" aria-hidden="true">{initial}</span>}
         </div>
-        <div className="min-w-0 flex-1 truncate font-card text-[19px] leading-tight">{name}</div>
-        <div className="shrink-0 text-[9px] uppercase tracking-[0.18em] opacity-60">{tag}</div>
+        <div className="min-w-0 flex-1">
+          <div className={`truncate font-card font-semibold tracking-[-0.035em] ${density === 'compact' ? 'text-[18px] leading-[1.2]' : 'text-[22px] leading-[1.25]'}`}>{name}</div>
+          <div className="mt-1 truncate text-[10px] font-medium uppercase tracking-[0.16em] opacity-65">{tag}</div>
+        </div>
+        <div className="shrink-0 text-end tabular-nums">
+          <div className="text-[10px] uppercase tracking-[0.13em] opacity-65">Stamps</div>
+          <div className={`font-card font-medium leading-tight ${density === 'compact' ? 'text-[20px]' : 'text-[23px]'}`}>{filled}<span className="mx-0.5 opacity-45">/</span>{total}</div>
+        </div>
       </div>
 
-      <div className="relative z-[1] my-auto grid grid-cols-4 gap-x-3 gap-y-2.5 px-1 pb-2.5 pt-3.5">
-        {Array.from({ length: total }).map((_, i) => {
-          const on = i < filled;
-          return (
-            <div
-              key={i}
-              className="grid aspect-square w-full max-w-[44px] place-items-center justify-self-center rounded-full"
-              style={{
-                background: light ? 'rgba(0,0,0,0.05)' : 'rgba(0,0,0,0.20)',
-                boxShadow: on
-                  ? `inset 0 1.5px 3px rgba(0,0,0,${light ? 0.16 : 0.35}), 0 0 0 1px color-mix(in srgb, ${fg} 35%, transparent)`
-                  : light
-                    ? 'inset 0 1.5px 3px rgba(0,0,0,0.16), 0 1px 0 rgba(255,255,255,0.7)'
-                    : 'inset 0 1.5px 3px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.06)',
-              }}
-            >
-              <Cup color={fg} on={on} />
-            </div>
-          );
-        })}
-      </div>
-
-      <div
-        className="relative z-[1] flex items-baseline justify-between gap-2.5 pt-2.5"
-        style={{ borderTop: `1px solid color-mix(in srgb, ${fg} 14%, transparent)` }}
-      >
-        <span className="text-[13px] font-semibold tabular-nums tracking-wide">{filled} / {total}</span>
-        <span className="text-end text-[11.5px] opacity-75">{footer ?? (left === 0 ? `Reward ready · ${goal}` : `${left} more · ${goal}`)}</span>
+      {density === 'compact' ? (
+        <div className="relative mt-[15px] flex h-[5px] gap-[4px]" aria-hidden="true">
+          {Array.from({ length: Math.max(1, count) }).map((_, i) => (
+            <span key={i} className="min-w-0 flex-1 rounded-full" style={{ background: fg, opacity: i < stamped ? 0.93 : light ? 0.13 : 0.2 }} />
+          ))}
+        </div>
+      ) : (
+        <div className="relative mt-5 grid gap-2 pb-1" aria-hidden="true"
+          style={{ gridTemplateColumns: `repeat(${Math.min(count || 1, 10)}, minmax(0, 1fr))` }}>
+          {Array.from({ length: count }).map((_, i) => (
+            <span key={i} className="grid aspect-square w-full max-w-[37px] place-items-center justify-self-center rounded-full"
+              style={{ border: `1px solid color-mix(in srgb, ${fg} ${i < stamped ? 52 : 25}%, transparent)`,
+                background: `color-mix(in srgb, ${fg} ${i < stamped ? 11 : 4}%, transparent)` }}>
+              <Cup color={fg} filled={i < stamped} />
+            </span>
+          ))}
+        </div>
+      )}
+      <div className={`relative flex min-w-0 items-center justify-between gap-2.5 ${density === 'compact' ? 'mt-[12px]' : 'mt-4 border-t pt-3.5'}`}
+        style={density === 'full' ? { borderColor: edge } : undefined}>
+        <span className="min-w-0 truncate text-[12px] font-medium opacity-85">{goal}</span>
+        <span className="min-w-0 shrink-0 text-end text-[11px] opacity-75">{label}</span>
       </div>
     </div>
   );

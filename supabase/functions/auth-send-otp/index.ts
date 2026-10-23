@@ -22,6 +22,10 @@ function hookError(status: number, message: string): Response {
 }
 
 Deno.serve(async (req) => {
+  const started = Date.now();
+  // Supabase's SMS Auth Hook has a short deadline. Reserve time for logging and
+  // final HTTP response; bound WhatsApp then SMS fallback under one budget.
+  const budgetLeft = () => Math.max(0, 4400 - (Date.now() - started));
   if (req.method !== 'POST') return hookError(405, 'POST required');
   if (Number(req.headers.get('content-length') ?? 0) > 100_000) return hookError(413, 'Payload too large');
   const payload = await req.text();
@@ -53,12 +57,15 @@ Deno.serve(async (req) => {
 
   const { data: profile } = await admin.from('profiles').select('locale').eq('id', data.user.id).maybeSingle();
   try {
-    await sendWhatsAppTemplate(phone, TEMPLATES.otp, [data.sms.otp], { otpButton: true, locale: profile?.locale ?? 'en' });
+    if (budgetLeft() < 600) throw new Error('hook_deadline');
+    await sendWhatsAppTemplate(phone, TEMPLATES.otp, [data.sms.otp], {
+      otpButton: true, locale: profile?.locale ?? 'en', timeoutMs: Math.min(2100, budgetLeft() - 400),
+    });
   } catch (waError) {
     console.error('WhatsApp OTP failed');
-    if (smsFallbackConfigured()) {
+    if (smsFallbackConfigured() && budgetLeft() > 600) {
       try {
-        await sendSms(phone, `Your Brewistan code is ${data.sms.otp}. It expires in 5 minutes.`);
+        await sendSms(phone, `Your Brewistan code is ${data.sms.otp}. It expires in 5 minutes.`, budgetLeft() - 400);
         return delivered();
       } catch (smsError) {
         console.error('SMS fallback failed');

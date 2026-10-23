@@ -20,9 +20,11 @@ interface Overview {
 export default async function OverviewPage() {
   const { supabase, cafe } = await requireOwnerContext();
   const { t } = await getT();
-  const { data } = await supabase.rpc('owner_overview', { p_cafe: cafe.id });
+  const { data, error: overviewError } = await supabase.rpc('owner_overview', { p_cafe: cafe.id });
+  if (overviewError || !data) throw new Error('Overview could not be loaded. Please retry; figures are not zero.');
   const o = (data ?? {}) as Overview;
-  const { data: sub } = await supabase.from('subscriptions').select('status, trial_ends_at, current_period_end').eq('cafe_id', cafe.id).single();
+  const { data: sub, error: subError } = await supabase.from('subscriptions').select('status, trial_ends_at, current_period_end').eq('cafe_id', cafe.id).single();
+  if (subError) throw new Error('Subscription status is unavailable. Please retry.');
 
   const statusTone = cafe.status === 'active' ? 'good' : cafe.status === 'pending' ? 'warn' : 'bad';
 

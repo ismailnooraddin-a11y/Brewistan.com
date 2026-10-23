@@ -13,7 +13,7 @@ const sources=[
  'supabase/functions/_shared/http.ts', 'supabase/functions/_shared/crypto.ts',
  'supabase/functions/_shared/validation.ts', 'supabase/functions/_shared/worker.ts',
  'supabase/functions/_shared/device-proof.ts', 'apps/web/lib/validation.ts',
- 'apps/web/lib/session-policy.ts', 'apps/web/lib/pagination.ts',
+ 'apps/web/lib/session-policy.ts', 'apps/web/lib/pagination.ts', 'apps/web/lib/site-routing.ts',
 ];
 try {
  fs.writeFileSync(declarations,'declare const Deno: { env: { get(name: string): string | undefined } };\n');

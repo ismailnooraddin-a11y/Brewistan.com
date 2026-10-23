@@ -1,10 +1,20 @@
+## New: the integrated Brewistan website
+
+For this website release, start with [WEBSITE_SETUP.md](WEBSITE_SETUP.md).
+Do not import a separate standalone website or delete the old Vercel project yet.
+The website lives in the existing `apps/web` project with host-based routing.
+
+**2026-10-23 source update:** Read [UPDATE_2026-10-23.md](UPDATE_2026-10-23.md) first. The older release notes below describe the original source history and do not certify these new changes.
+
+**Complete reference for the whole project (domains, hosting, settings, secrets, workflows): `PROJECT_REFERENCE.md`.**
+
 # Start here - Brewistan final source bundle
 
-**Version:** 1.0.1 source candidate, 16 October 2026.
+**Version:** Source update on 23 October 2026, based on 1.0.1.
 
 **Read `docs/final/PRODUCTION_FIXES.md` first: it lists the fixes made after this bundle was assembled.**
 
-The complete revised project is in this folder: Flutter app, owner/admin web app, Supabase backend, all eleven ordered migrations, assets supplied with the original project, configuration templates, setup/release scripts, tests, reports and evidence. Nothing needs to be copied from the earlier ZIP to use this source bundle.
+The complete revised project is in this folder: Flutter app, owner/admin web app, Supabase backend, all nineteen ordered migrations, assets supplied with the original project, configuration templates, setup/release scripts, tests, reports and evidence. Nothing needs to be copied from the earlier ZIP to use this source bundle.
 
 ## Read in this order
 

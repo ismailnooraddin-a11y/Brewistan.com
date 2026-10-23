@@ -15,7 +15,7 @@ export default async function CampaignPage() {
         description="Changing the rules creates a new version. Stamps already earned keep counting toward the puzzle; new puzzles use the new rules."
       />
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-        {active && <CampaignForm cafeId={cafe.id} campaign={active} />}
+        {active && <CampaignForm key={cafe.id} cafeId={cafe.id} campaign={active} />}
         <div className="card">
           <h2 className="mb-3 text-lg">History</h2>
           <ul className="space-y-3 text-sm">

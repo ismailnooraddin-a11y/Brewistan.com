@@ -41,7 +41,10 @@ Deno.serve(handler(async (req) => {
         await rpc('ack_notice_job',{p_id:job.id,p_claim:job.claimToken,p_success:success});
       }});
   }
-  if (!pushConfigured()) return json({expired,notices,pushConfigured:false,note:'FCM not configured; no push jobs claimed'});
+  if (!pushConfigured()) {
+    const operations=await rpc('maintenance_metrics');
+    return json({expired,notices,pushConfigured:false,note:'FCM not configured; no push jobs claimed',operations});
+  }
   const prepared=await rpc('prepare_push_jobs');
   let accepted=0,retryOrFailed=0,invalidTokens=0;
   const push=await drainQueue<Job>({deadlineMs:started+75000,batchSize:10,maxJobs:1000,

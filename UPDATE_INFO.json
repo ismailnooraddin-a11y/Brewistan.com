@@ -1,0 +1,71 @@
+{
+  "project": "Brewistan",
+  "source_update": "2026-10-23",
+  "based_on": "brewistan-complete-project.zip",
+  "release_status": "source update / staging candidate, not production certified",
+  "migration_count": 19,
+  "original_archive_sha256": "1a138e4d64b84e63b6806f47bb10af6757d5b39831c82e24adf43418c0c6de45",
+  "code_changes_before_metadata": {
+    "modified": [
+      "CHANGELOG.md",
+      "README.md",
+      "START_HERE.md",
+      "apps/mobile/lib/screens/wallet_screen.dart",
+      "apps/mobile/lib/services/local_db.dart",
+      "apps/mobile/lib/services/time_service.dart",
+      "apps/mobile/lib/widgets/loyalty_card.dart",
+      "apps/web/app/dashboard/account/page.tsx",
+      "apps/web/app/dashboard/activity/page.tsx",
+      "apps/web/app/dashboard/branches/page.tsx",
+      "apps/web/app/dashboard/branding/page.tsx",
+      "apps/web/app/dashboard/campaign/page.tsx",
+      "apps/web/app/dashboard/page.tsx",
+      "apps/web/app/dashboard/push/page.tsx",
+      "apps/web/app/dashboard/staff/page.tsx",
+      "apps/web/app/dashboard/verification/page.tsx",
+      "apps/web/app/login/LoginForm.tsx",
+      "apps/web/app/logout/route.ts",
+      "apps/web/app/onboarding/OnboardingForm.tsx",
+      "apps/web/app/privacy/page.tsx",
+      "apps/web/components/CafeCardPreview.tsx",
+      "apps/web/components/customer/CafeEntry.tsx",
+      "apps/web/components/customer/CardView.tsx",
+      "apps/web/components/customer/CardsHome.tsx",
+      "apps/web/components/customer/PhoneAuth.tsx",
+      "apps/web/components/customer/StaffScanner.tsx",
+      "apps/web/components/customer/useCustomer.ts",
+      "apps/web/lib/customer/device.ts",
+      "apps/web/lib/customer/protocol.ts",
+      "apps/web/lib/customer/strings.ts",
+      "apps/web/lib/customer/wallet.ts",
+      "supabase/functions/_shared/messaging.ts",
+      "supabase/functions/auth-send-otp/index.ts",
+      "supabase/functions/push-dispatch/index.ts",
+      "supabase/tests/run.mjs"
+    ],
+    "added": [
+      "UPDATE_2026-10-23.md",
+      "apps/web/components/AuthEmailSettings.tsx",
+      "apps/web/components/customer/CafeQrScanner.tsx",
+      "supabase/migrations/20261023000018_session_onboarding_slug_fix.sql",
+      "supabase/migrations/20261023000019_historical_offline_campaign.sql",
+      "supabase/tests/update-regression.mjs"
+    ],
+    "deleted": []
+  },
+  "verified_here": {
+    "node_project": 19,
+    "node_helpers": 27,
+    "strict_dependency_free_ts_modules": 8,
+    "python_platform": 11
+  },
+  "requires_external_validation": [
+    "PGlite database regression suite on new migrations",
+    "Next.js npm install and production build",
+    "Deno check and integration tests",
+    "Flutter analyze/test",
+    "real device, OTP and QR scanning, platform wallet issuers"
+  ],
+  "native_apple_google_wallet_passes": "NOT IMPLEMENTED IN THIS SOURCE UPDATE",
+  "historic_bundle_metadata": "BUNDLE_INFO.json records the older 2026-10-16 revision, not this update"
+}

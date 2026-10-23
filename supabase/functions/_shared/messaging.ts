@@ -25,7 +25,7 @@ export async function sendWhatsAppTemplate(
   to: string,
   template: string,
   params: string[],
-  opts: { locale?: string; otpButton?: boolean } = {},
+  opts: { locale?: string; otpButton?: boolean; timeoutMs?: number } = {},
 ): Promise<void> {
   const token = Deno.env.get('WHATSAPP_TOKEN');
   const phoneId = Deno.env.get('WHATSAPP_PHONE_NUMBER_ID');
@@ -47,7 +47,7 @@ export async function sendWhatsAppTemplate(
 
   const res = await fetch(`https://graph.facebook.com/${WA_VERSION}/${phoneId}/messages`, {
     method: 'POST',
-    signal: AbortSignal.timeout(8_000),
+    signal: AbortSignal.timeout(Math.max(100, Math.min(opts.timeoutMs ?? 8_000, 8_000))),
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       messaging_product: 'whatsapp',
@@ -63,12 +63,12 @@ export function smsFallbackConfigured(): boolean {
   return !!(Deno.env.get('TWILIO_ACCOUNT_SID') && Deno.env.get('TWILIO_AUTH_TOKEN') && Deno.env.get('TWILIO_FROM'));
 }
 
-export async function sendSms(to: string, body: string): Promise<void> {
+export async function sendSms(to: string, body: string, timeoutMs = 8_000): Promise<void> {
   const sid = Deno.env.get('TWILIO_ACCOUNT_SID')!;
   const auth = btoa(`${sid}:${Deno.env.get('TWILIO_AUTH_TOKEN')}`);
   const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
     method: 'POST',
-    signal: AbortSignal.timeout(8_000),
+    signal: AbortSignal.timeout(Math.max(100, Math.min(timeoutMs, 8_000))),
     headers: { Authorization: `Basic ${auth}`, 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({ To: `+${to}`, From: Deno.env.get('TWILIO_FROM')!, Body: body }),
   });

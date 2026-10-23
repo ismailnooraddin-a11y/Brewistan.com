@@ -10,7 +10,7 @@ export default async function BranchesPage() {
   return (
     <>
       <PageHeader title={t('branches.title')} description="Customer progress is shared across all branches of this cafe." />
-      <BranchManager cafeId={cafe.id} branches={branches ?? []} />
+      <BranchManager key={cafe.id} cafeId={cafe.id} branches={branches ?? []} />
       <BranchQrCodes cafeName={cafe.name} cafeSlug={cafe.slug} branches={(branches ?? []).filter((b) => b.active)} />
     </>
   );

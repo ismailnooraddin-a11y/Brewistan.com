@@ -3,9 +3,20 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
-export function OnboardingForm({ firstName, lastName, userId }: { firstName: string; lastName: string; userId: string }) {
+export function OnboardingForm({ firstName, lastName }: { firstName: string; lastName: string; userId: string }) {
   const supabase = createClient();
   const [busy, setBusy] = useState(false);
+  const [requestId] = useState(() => {
+    // Preserve the idempotency key if the network returns an unknown outcome
+    // and the user reloads the form before a confirmed redirect.
+    try {
+      const key = sessionStorage.getItem('bw.onboarding.request');
+      if (key && /^[0-9a-f-]{36}$/i.test(key)) return key;
+      const next = crypto.randomUUID();
+      sessionStorage.setItem('bw.onboarding.request', next);
+      return next;
+    } catch { return crypto.randomUUID(); }
+  });
   const [error, setError] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
@@ -19,28 +30,21 @@ export function OnboardingForm({ firstName, lastName, userId }: { firstName: str
     }
     setBusy(true);
     try {
-      const { error: pErr } = await supabase.from('profiles').update({
-        first_name: String(f.get('first_name')).trim(),
-        last_name: String(f.get('last_name')).trim(),
-      }).eq('id', userId);
-      if (pErr) throw pErr;
-
-      const { data: cafe, error: cErr } = await supabase.from('cafes').insert({
-        owner_id: userId,
-        name: String(f.get('name')).trim(),
-        instagram_url: instagram || null,
-        business_registration_no: String(f.get('registration') ?? '').trim() || null,
-      }).select('id').single();
-      if (cErr) throw cErr;
-
-      const { error: bErr } = await supabase.from('branches').insert({
-        cafe_id: cafe.id,
-        name: String(f.get('branch')).trim(),
-        address: String(f.get('address') ?? '').trim() || null,
+      // One atomic, idempotent RPC: no orphan cafe if branch creation fails.
+      const { data: cafeId, error: setupErr } = await supabase.rpc('create_cafe_with_branch', {
+        p_request_id: requestId,
+        p_first: String(f.get('first_name')).trim(),
+        p_last: String(f.get('last_name')).trim(),
+        p_name: String(f.get('name')).trim(),
+        p_instagram: instagram,
+        p_registration: String(f.get('registration') ?? '').trim(),
+        p_branch: String(f.get('branch')).trim(),
+        p_address: String(f.get('address') ?? '').trim() || null,
       });
-      if (bErr) throw bErr;
+      if (setupErr || !cafeId) throw setupErr ?? new Error('Cafe setup failed.');
 
-      document.cookie = `bw_cafe=${cafe.id}; path=/; samesite=lax`;
+      try { sessionStorage.removeItem('bw.onboarding.request'); } catch { /* ephemeral storage unavailable */ }
+      document.cookie = `bw_cafe=${cafeId}; path=/; samesite=lax`;
       window.location.href = '/dashboard/verification';
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong.');

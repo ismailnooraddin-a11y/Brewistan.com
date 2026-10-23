@@ -26,6 +26,8 @@ const REASONS: Record<string, string> = {
   device_unknown: 'the customer must sign in again',
 };
 
+type PendingScan = { action: 'stamp' | 'redeem'; qr: string; cafeId: string; branchId: string | null; eventId: string; rewardId: string | null };
+
 type Detector = { detect: (src: CanvasImageSource) => Promise<{ rawValue: string }[]> };
 
 /** Web scanner for baristas (online). Uses the camera; nothing is stamped without a tap. */
@@ -40,6 +42,9 @@ export function StaffScanner() {
   const [preview, setPreview] = useState<Preview | null>(null);
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [scanContext, setScanContext] = useState<{ cafeId: string; branchId: string | null } | null>(null);
+  const [pending, setPending] = useState<PendingScan | null>(null);
+  const [uncertain, setUncertain] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -75,9 +80,11 @@ export function StaffScanner() {
 
   const onCode = useCallback(async (value: string) => {
     scanning.current = false;
-    setQr(value); setBusy(true); setResult(null);
+    const context = { cafeId, branchId: branchId || null };
+    setScanContext(context);
+    setQr(value); setBusy(true); setResult(null); setUncertain(false); setPending(null);
     try {
-      const p = await callFunction<Preview>('scan', { action: 'preview', qr: value, cafeId, branchId: branchId || null, eventId: crypto.randomUUID() });
+      const p = await callFunction<Preview>('scan', { action: 'preview', qr: value, ...context, eventId: crypto.randomUUID() });
       setPreview(p);
     } catch (e) {
       const code = e instanceof CustomerApiError ? e.code : 'unavailable';
@@ -111,7 +118,7 @@ export function StaffScanner() {
   }, [onCode]);
 
   async function startCamera() {
-    setResult(null); setPreview(null); setQr(null);
+    setResult(null); setPreview(null); setQr(null); setPending(null); setUncertain(false); setScanContext(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
       streamRef.current = stream;
@@ -122,26 +129,47 @@ export function StaffScanner() {
     }
   }
 
-  async function act(action: 'stamp' | 'redeem') {
-    if (!qr) return;
+  async function submitScan(intent: PendingScan) {
+    if (busy) return;
     setBusy(true);
+    setUncertain(false);
+    setPending(intent); // One immutable event, reused if response is lost.
     try {
-      const r = await callFunction<ScanResult>('scan', {
-        action, qr, cafeId, branchId: branchId || null, eventId: crypto.randomUUID(),
-        rewardId: action === 'redeem' ? preview?.availableRewardId ?? null : null,
-      });
-      if (r.status === 'accepted') {
+      const r = await callFunction<ScanResult>('scan', { ...intent });
+      setPending(null);
+      if (r.status === 'accepted' || r.status === 'duplicate') {
         setResult({ ok: true, text: r.type === 'redeem' ? t('rewardRedeemed') : r.puzzle_completed ? t('cardCompleted') : t('stampAdded', { n: r.stamps ?? 0, m: r.required ?? 0 }) });
       } else {
         setResult({ ok: false, text: t('scanRefused', { reason: REASONS[r.reason ?? ''] ?? r.reason ?? r.status }) });
       }
+      setPreview(null);
     } catch (e) {
       const code = e instanceof CustomerApiError ? e.code : 'unavailable';
-      setResult({ ok: false, text: t('scanRefused', { reason: REASONS[code] ?? code }) });
-    } finally { setBusy(false); setPreview(null); }
+      if (code === 'unavailable' || code === 'network_error') {
+        // The backend might have committed. Never generate another event ID.
+        setUncertain(true);
+        setResult(null);
+      } else {
+        setPending(null);
+        setPreview(null);
+        setResult({ ok: false, text: t('scanRefused', { reason: REASONS[code] ?? code }) });
+      }
+    } finally { setBusy(false); }
   }
 
-  function next() { setResult(null); setPreview(null); setQr(null); if (streamRef.current) { scanning.current = true; loop(); } else startCamera(); }
+  function act(action: 'stamp' | 'redeem') {
+    if (busy || pending || uncertain || !qr || !preview || !scanContext) return;
+    const intent: PendingScan = {
+      action, qr, cafeId: scanContext.cafeId, branchId: scanContext.branchId,
+      eventId: crypto.randomUUID(), rewardId: action === 'redeem' ? preview.availableRewardId ?? null : null,
+    };
+    void submitScan(intent);
+  }
+
+  function next() {
+    setResult(null); setPreview(null); setQr(null); setPending(null); setUncertain(false); setScanContext(null);
+    if (streamRef.current) { scanning.current = true; loop(); } else void startCamera();
+  }
 
   const cafe = cafes?.find((c) => c.cafeId === cafeId);
   return (
@@ -157,11 +185,11 @@ export function StaffScanner() {
         <>
           <div className="mt-4 grid grid-cols-2 gap-3">
             <label className="block"><span className="cx-label">{t('scannerFor')}</span>
-              <select className="cx-input" value={cafeId} onChange={(e) => { setCafeId(e.target.value); setBranchId(cafes!.find((c) => c.cafeId === e.target.value)?.branches[0]?.id ?? ''); }}>
+              <select className="cx-input" value={cafeId} disabled={!!scanContext || !!pending || busy} onChange={(e) => { setCafeId(e.target.value); setBranchId(cafes!.find((c) => c.cafeId === e.target.value)?.branches[0]?.id ?? ''); }}>
                 {cafes!.map((c) => <option key={c.cafeId} value={c.cafeId} className="bg-[#1b1916]">{c.name}</option>)}
               </select></label>
             <label className="block"><span className="cx-label">{t('branch')}</span>
-              <select className="cx-input" value={branchId} onChange={(e) => setBranchId(e.target.value)}>
+              <select className="cx-input" value={branchId} disabled={!!scanContext || !!pending || busy} onChange={(e) => setBranchId(e.target.value)}>
                 {cafe.branches.map((b) => <option key={b.id} value={b.id} className="bg-[#1b1916]">{b.name}</option>)}
               </select></label>
           </div>
@@ -169,7 +197,7 @@ export function StaffScanner() {
           <div className="relative mt-5 aspect-square w-full overflow-hidden rounded-2xl border border-white/[0.07] bg-black">
             <video ref={videoRef} playsInline muted className={`h-full w-full object-cover ${camera === 'on' ? '' : 'hidden'}`} />
             <canvas ref={canvasRef} className="hidden" />
-            {camera === 'on' && !preview && !result && (
+            {camera === 'on' && !preview && !result && !pending && (
               <div aria-hidden="true" className="pointer-events-none absolute inset-[18%] rounded-2xl border-2 border-[#c8a96a]/80" />
             )}
             {camera !== 'on' && (
@@ -181,9 +209,9 @@ export function StaffScanner() {
             )}
             {busy && <div className="absolute inset-0 grid place-items-center bg-black/60"><Spinner label={t('checking')} /></div>}
           </div>
-          {camera === 'on' && !preview && !result && <p className="mt-3 text-center text-[13.5px] cx-muted">{t('pointCamera')}</p>}
+          {camera === 'on' && !preview && !result && !pending && <p className="mt-3 text-center text-[13.5px] cx-muted">{t('pointCamera')}</p>}
 
-          {preview && (
+          {preview && !uncertain && !pending && (
             <section className="cx-surface mt-5 space-y-3 p-5">
               <div className="text-[18px] font-semibold">{preview.customerName}</div>
               {preview.availableRewardId && (
@@ -192,7 +220,14 @@ export function StaffScanner() {
                 </button>
               )}
               <button className={preview.availableRewardId ? 'cx-btn-quiet w-full' : 'cx-btn'} disabled={busy} onClick={() => act('stamp')}>{t('addStamp')}</button>
-              <button className="cx-link block w-full text-center" onClick={next}>{t('cancel')}</button>
+              <button className="cx-link block w-full text-center" disabled={busy} onClick={next}>{t('cancel')}</button>
+            </section>
+          )}
+          {uncertain && pending && (
+            <section className="mt-5 rounded-2xl border border-[#c8a96a]/40 bg-[#c8a96a]/10 p-5">
+              <p role="alert" className="text-[14px] font-semibold">The connection dropped. This stamp or reward may already be recorded.</p>
+              <p className="mt-1.5 text-[13px] cx-muted">Retry this exact transaction to confirm the result. Do not scan the customer again.</p>
+              <button className="cx-btn mt-4" disabled={busy} onClick={() => submitScan(pending)}>Check / retry same transaction</button>
             </section>
           )}
           {result && (

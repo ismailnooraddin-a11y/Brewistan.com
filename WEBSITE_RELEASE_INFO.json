@@ -1,0 +1,69 @@
+{
+  "release": "Brewistan integrated owner marketing website",
+  "date": "2026-10-23",
+  "base": "Premium update with database-regression and Edge/Deno hotfixes (user-reported commit 49bdb4d)",
+  "target_vercel_project": "brewistan-com-l2as",
+  "vercel_root_directory": "apps/web",
+  "archive_layout": "Repository root; unzip directly into existing repository after preserving newer work.",
+  "owner_signup": "https://dashboard.brewistan.com/login?signup=cafe",
+  "website_added_files": [
+    "WEBSITE_RELEASE_INFO.json",
+    "WEBSITE_SETUP.md",
+    "apps/web/lib/site-routing.ts",
+    "apps/web/public/website/favicon.svg",
+    "apps/web/public/website/index.html",
+    "apps/web/public/website/site.css",
+    "apps/web/public/website/site.js",
+    "apps/web/public/website/social-card.png",
+    "docs/website/VALIDATION.md",
+    "scripts/website-checks.mjs"
+  ],
+  "website_changed_files": [
+    ".github/workflows/ci.yml",
+    "CHANGELOG.md",
+    "MANIFEST.sha256",
+    "PROJECT_REFERENCE.md",
+    "README.md",
+    "START_HERE.md",
+    "apps/web/.env.example",
+    "apps/web/app/login/LoginForm.tsx",
+    "apps/web/app/login/page.tsx",
+    "apps/web/middleware.ts",
+    "scripts/typecheck-helpers.mjs"
+  ],
+  "deleted_files": [],
+  "verification": {
+    "node_tests_passed": 68,
+    "python_platform_tests_passed": 11,
+    "strict_typechecked_dependency_free_modules": 9,
+    "browser_viewport_widths_checked": [
+      320,
+      375,
+      390,
+      430,
+      768,
+      1024,
+      1440,
+      1920
+    ],
+    "browser_surface": "Local HTML/CSS/JS rendered in memory in Chromium; not Next.js or Vercel delivery.",
+    "next_build": "Not executed here: pinned dependencies could not be installed because registry DNS was unavailable.",
+    "live_auth_domains_and_devices": "Pending staging/production verification."
+  },
+  "unchanged_by_website_update": [
+    "Database migrations",
+    "Supabase function code",
+    "Flutter application",
+    "Package manifests and lockfiles",
+    "Customer PWA code",
+    "Existing owner business rules"
+  ],
+  "launch_notes": [
+    "Pass existing GitHub CI and preview checks before merging.",
+    "Move apex/www domains into the intended project only after its production deployment is verified; do not delete the old project first.",
+    "Confirm existing backend deployment readiness for owner onboarding.",
+    "Complete existing draft legal pages with real operator/contact details.",
+    "Timing figures are design targets, not measured production performance.",
+    "Apple/Google Wallet and plastic-card integrations are marked Planned and are not implemented by this release."
+  ]
+}

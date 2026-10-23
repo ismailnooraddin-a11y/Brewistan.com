@@ -48,5 +48,7 @@ Deno.test('Iraqi phone numbers are normalised', () => {
   assertEquals(toE164('+964 750 448 7959'), '+9647504487959');
   assertEquals(toE164('00964 7504487959'), '+9647504487959');
   assertEquals(toE164('+420 777 123 456'), '+420777123456');
+  assertEquals(toE164('٠٧٥٠ ٤٤٨ ٧٩٥٩'), '+9647504487959');
+  assertEquals(toE164('۰۷۵۰ ۴۴۸ ۷۹۵۹'), '+9647504487959');
   assertEquals(toE164('123'), null);
 });

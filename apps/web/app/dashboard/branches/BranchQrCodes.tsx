@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { SectionHeader } from '@/components/ui';
 
-const BASE = (process.env.NEXT_PUBLIC_CUSTOMER_URL ?? 'https://brewistan.com').replace(/\/$/, '');
+const BASE = (process.env.NEXT_PUBLIC_CUSTOMER_URL ?? 'https://app.brewistan.com').replace(/\/$/, '');
 
 interface Branch { id: string; name: string; slug: string }
 

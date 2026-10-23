@@ -18,9 +18,11 @@ class TimeService {
     _lastSyncMs = int.tryParse(await _db.kvGet('time_last_sync') ?? '') ?? 0;
     _lastLocalMs = int.tryParse(await _db.kvGet('time_last_local') ?? '') ?? 0;
     final local = DateTime.now().millisecondsSinceEpoch;
+    movedBackwards = (await _db.kvGet('time_rollback') ?? '') == '1';
     if (_lastLocalMs > 0 && local < _lastLocalMs - 60000) movedBackwards = true;
+    if (movedBackwards) await _db.kvSet('time_rollback', '1');
     _anchorLocal = local; _monotonic..reset()..start();
-    await _db.kvSet('time_last_local', '$local');
+    await _db.kvSet('time_last_local', '${local > _lastLocalMs ? local : _lastLocalMs}');
   }
 
   /// Corrected "now" in milliseconds since epoch.
@@ -39,13 +41,20 @@ class TimeService {
     _lastSyncMs = local;
     _lastLocalMs = local;
     movedBackwards = false;
+    await _db.kvSet('time_rollback', '0');
     await _db.kvSet('time_offset', '$_offsetMs');
     await _db.kvSet('time_last_sync', '$_lastSyncMs');
     _anchorLocal = local; _monotonic..reset()..start();
     await _db.kvSet('time_last_local', '$local');
   }
 
-  Future<void> checkpoint() => _db.kvSet('time_last_local', '${DateTime.now().millisecondsSinceEpoch}');
+  Future<void> checkpoint() async {
+    final local = DateTime.now().millisecondsSinceEpoch;
+    if (_lastLocalMs > 0 && local < _lastLocalMs - 60000) movedBackwards = true;
+    _lastLocalMs = local > _lastLocalMs ? local : _lastLocalMs;
+    await _db.kvSet('time_last_local', '$_lastLocalMs');
+    if (movedBackwards) await _db.kvSet('time_rollback', '1');
+  }
 
   bool get stale =>
       _lastSyncMs == 0 || DateTime.now().millisecondsSinceEpoch - _lastSyncMs > const Duration(hours: 72).inMilliseconds;
