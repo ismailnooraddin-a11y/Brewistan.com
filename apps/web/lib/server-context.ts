@@ -16,6 +16,7 @@ export async function getT() {
 }
 
 export interface OwnerCafe {
+  slug: string;
   id: string;
   name: string;
   status: 'pending' | 'active' | 'rejected' | 'suspended' | 'closed';
@@ -36,7 +37,7 @@ export async function requireOwnerContext() {
 
   const list:OwnerCafe[]=[];let after:string|null=null;let pages=0;
   while(true){
-    let query=supabase.from('cafes').select('id,name,status,tier,verification_code,verification_photo_path,instagram_url,rejection_reason,logo_path,brand')
+    let query=supabase.from('cafes').select('id,name,slug,status,tier,verification_code,verification_photo_path,instagram_url,rejection_reason,logo_path,brand')
       .eq('owner_id',user.id).order('id').limit(500);
     if(after)query=query.gt('id',after);
     const {data,error}=await query;

@@ -1,13 +1,9 @@
-name: Web app (PWA)
+name: Flutter web build (manual)
 
-# Builds the customer and staff app for the browser and publishes it with
-# GitHub Pages at app.brewistan.com. Runs after every change to the app.
+# Optional: builds the Flutter app for the browser and publishes it with GitHub Pages.
+# Not used in production: customers use the web app on brewistan.com (apps/web).
+# Kept for testing the future native app's code in a browser. Run it from the Actions tab.
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'apps/mobile/**'
-      - '.github/workflows/web-app.yml'
   workflow_dispatch:
 
 permissions:

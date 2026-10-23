@@ -95,3 +95,25 @@ input[type='file']::file-selector-button {
   @apply me-3 h-9 cursor-pointer rounded-md border border-line bg-white px-3 text-[13px] font-medium text-ink transition-colors duration-150;
 }
 input[type='file']::file-selector-button:hover { @apply bg-cream-deep; }
+
+/* Customer app (brewistan.com): warm dark surfaces, cream text, one gold accent. */
+@layer components {
+  .cx-surface { @apply rounded-2xl border border-white/[0.07] bg-[#1b1916]; }
+  .cx-input {
+    @apply h-12 w-full rounded-xl border border-white/10 bg-[#1b1916] px-4 text-[16px] text-[#f3eee6] outline-none
+      transition-[border-color,box-shadow] duration-150 placeholder:text-[#7d756b]
+      focus:border-[#c8a96a] focus:ring-[3px] focus:ring-[#c8a96a]/20;
+  }
+  .cx-label { @apply mb-2 block text-[13px] font-medium text-[#a39a8e]; }
+  .cx-btn {
+    @apply inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#c8a96a] px-5 text-[15px] font-semibold
+      text-[#151311] transition-[background-color,transform] duration-150 hover:bg-[#d6b97c] active:scale-[0.99]
+      disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .cx-btn-quiet {
+    @apply inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-white/10 bg-transparent px-4 text-[14px]
+      font-medium text-[#f3eee6] transition-colors duration-150 hover:bg-white/[0.05] disabled:opacity-50;
+  }
+  .cx-link { @apply text-[14px] font-medium text-[#c8a96a] hover:underline disabled:opacity-50; }
+  .cx-muted { @apply text-[#a39a8e]; }
+}

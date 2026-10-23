@@ -145,4 +145,51 @@ export async function finalRegression(db,ids){
  assert.equal((await one('select platform from public.devices where id=$1',[reg.deviceId])).platform,'web');
  await assert.rejects(db.query("select public.register_device($1,$2,'windows',null,null,'x',now()+interval '30 days')",[webUser,'X'.repeat(43)]),/invalid_registration/);
  console.log('final: web app devices register; unknown platforms are refused');
+
+ // Customer web app: slugs, public QR page, registration, joining without a stamp, staff list.
+ await as(null);
+ const cafeRow=await one('select slug,name from public.cafes where id=$1',[ids.cafe]);
+ assert.match(cafeRow.slug,/^[a-z0-9]+(-[a-z0-9]+)*$/);
+ const branchRow=await one('select slug from public.branches where id=$1',[ids.branch]);
+ assert.ok(branchRow.slug);
+ // Arabic-script names get a short stable slug.
+ const arabicCafe=(await one("insert into public.cafes (name, owner_id) values ('مقهى النخيل',$1) returning slug",[pushOwner])).slug;
+ assert.match(arabicCafe,/^cafe-[a-f0-9]{6}$/);
+ // Slugs never change for owners (printed QR codes depend on them).
+ await as(pushOwner);await db.exec('set role authenticated');
+ await db.query("update public.branches set slug='renamed-branch' where id=$1",[ids.branch]);
+ assert.equal((await one('select slug from public.branches where id=$1',[ids.branch])).slug,branchRow.slug);
+ await db.exec('reset role');
+ // Public landing page works for anonymous visitors of an active cafe.
+ await db.query("update public.cafes set status='active' where id=$1",[ids.cafe]);
+ await db.query("select set_config('request.jwt.claims','{\"role\":\"anon\"}',false)");await db.exec('set role anon');
+ const page=(await one('select public.public_cafe_page($1,$2) p',[cafeRow.slug,branchRow.slug])).p;
+ assert.equal(page.cafeId,ids.cafe);
+ assert.equal(page.branchId,ids.branch);
+ assert.equal((await one("select public.public_cafe_page('no-such-cafe') p")).p,null);
+ await db.exec('reset role');
+ // A brand-new customer: profile must be completed before joining.
+ const newCustomer=crypto.randomUUID();
+ await as(null);
+ await db.query('insert into auth.users (id, phone, phone_confirmed_at) values ($1, $2, now())',[newCustomer,'9647709999100']);
+ await as(newCustomer);await db.exec('set role authenticated');
+ await assert.rejects(db.query('select public.join_cafe($1)',[ids.cafe]),/profile_incomplete/);
+ await assert.rejects(db.query("select public.complete_profile('Lana','K.','other')"),/invalid_gender/);
+ await assert.rejects(db.query("select public.complete_profile('Lana','K.','female','not-an-email')"),/invalid_email/);
+ await db.query("select public.complete_profile('Lana','K.','female','lana@example.com')");
+ await db.query('select public.join_cafe($1)',[ids.cafe]);
+ await db.query('select public.join_cafe($1)',[ids.cafe]);
+ await db.exec('reset role');await as(null);
+ const joined=await one('select stamps_in_current,total_stamps from public.user_cafe_progress where user_id=$1 and cafe_id=$2',[newCustomer,ids.cafe]);
+ assert.equal(joined.stamps_in_current,0,'joining never awards a stamp');
+ assert.equal(joined.total_stamps,0);
+ assert.equal((await one('select count(*)::int n from public.stamp_events where user_id=$1',[newCustomer])).n,0);
+ // The web scanner lists only cafes where this person is an active barista.
+ await as(riskBarista);await db.exec('set role authenticated');
+ const staffCafes=(await one('select public.my_staff_cafes() s')).s;
+ assert.ok(staffCafes.some(c=>c.cafeId===ids.cafe));
+ await db.exec('reset role');await as(newCustomer);await db.exec('set role authenticated');
+ assert.equal((await one('select public.my_staff_cafes() s')).s.length,0);
+ await db.exec('reset role');await as(null);
+ console.log('final: customer web app (slugs, QR page, registration, join without stamp, scanner list)');
 }

@@ -9,6 +9,15 @@ const PUBLIC_PATHS = ['/login', '/privacy', '/terms'];
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const host = (request.headers.get('host') ?? '').split(':')[0];
+
+  // Customer app (brewistan.com/c/..., /cards, /scan). Customers stay signed in through their own
+  // browser session and never use the café-owner session rules below.
+  const customerHosts = (process.env.CUSTOMER_HOSTS ?? 'brewistan.com,www.brewistan.com').split(',').map((h) => h.trim());
+  if (customerHosts.includes(host) && url.pathname === '/') {
+    url.pathname = '/cards';
+    return NextResponse.redirect(url);
+  }
+  if (isCustomerPath(url.pathname)) return NextResponse.next();
   const adminHost = process.env.ADMIN_HOST;
   const isAdminHost = !!adminHost && host === adminHost;
 
@@ -87,6 +96,11 @@ export async function middleware(request: NextRequest) {
   }
 
   return response;
+}
+
+function isCustomerPath(path: string): boolean {
+  return path === '/cards' || path.startsWith('/cards/') || path.startsWith('/c/') || path === '/scan' ||
+    path === '/sw.js' || path === '/manifest.webmanifest' || path === '/offline.html';
 }
 
 export const config = {

@@ -21,9 +21,11 @@ function Cup({ color, on }: { color: string; on: boolean }) {
 }
 
 export function CafeCardPreview({
-  name, bg, fg, logoUrl, filled = 5, total = 8, goal = 'Free coffee', tag = 'Loyalty',
+  name, bg, fg, logoUrl, filled = 5, total = 8, goal = 'Free coffee', tag = 'Loyalty', footer,
 }: {
   name: string; bg: string; fg: string; logoUrl: string | null; filled?: number; total?: number; goal?: string; tag?: string;
+  /** Overrides the progress text on the right (used for translated text in the customer app). */
+  footer?: string;
 }) {
   const light = isLight(bg);
   const initial = name.trim().charAt(0).toUpperCase() || '?';
@@ -103,7 +105,7 @@ export function CafeCardPreview({
         style={{ borderTop: `1px solid color-mix(in srgb, ${fg} 14%, transparent)` }}
       >
         <span className="text-[13px] font-semibold tabular-nums tracking-wide">{filled} / {total}</span>
-        <span className="text-right text-[11.5px] opacity-75">{left === 0 ? `Reward ready · ${goal}` : `${left} more · ${goal}`}</span>
+        <span className="text-end text-[11.5px] opacity-75">{footer ?? (left === 0 ? `Reward ready · ${goal}` : `${left} more · ${goal}`)}</span>
       </div>
     </div>
   );
