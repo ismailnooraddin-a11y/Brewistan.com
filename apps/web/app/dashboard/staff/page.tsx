@@ -17,7 +17,7 @@ export default async function StaffPage({searchParams}:{searchParams:Promise<{pa
         title={t('staff.title')}
         description="Baristas receive a WhatsApp invite with the app link. Stamps by a new barista are flagged until you confirm them, or for 24 hours. Figures cover the last 30 days."
       />
-      <StaffManager cafeId={cafe.id} staff={data.staff} branches={data.branches} />
+      <StaffManager key={cafe.id} cafeId={cafe.id} staff={data.staff} branches={data.branches} />
       <Pagination path="/dashboard/staff" page={page} hasMore={data.hasMore}/>
     </>
   );

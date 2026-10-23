@@ -24,6 +24,8 @@ function toE164(input: string): string {
 export function LoginForm({ labels }: { labels: Labels }) {
   const supabase = createClient();
   const [phone, setPhone] = useState('');
+  const [method, setMethod] = useState<'phone' | 'email'>('phone');
+  const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [step, setStep] = useState<'phone' | 'code'>('phone');
   const [busy, setBusy] = useState(false);
@@ -34,13 +36,17 @@ export function LoginForm({ labels }: { labels: Labels }) {
     if (busy) return;
     setError(null);
     const e164 = toE164(phone);
-    if (!/^\+\d{11,15}$/.test(e164)) {
-      setError('Enter a valid phone number.');
-      return;
+    if (method === 'phone' && !/^\+\d{11,15}$/.test(e164)) {
+      setError('Enter a valid phone number.'); return;
+    }
+    if (method === 'email' && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {
+      setError('Enter a valid email address.'); return;
     }
     setBusy(true);
     try {
-      const { error } = await supabase.auth.signInWithOtp({ phone: e164, options: { channel: 'sms' } });
+      const { error } = method === 'email'
+        ? await supabase.auth.signInWithOtp({ email: email.trim().toLowerCase(), options: { shouldCreateUser: false } })
+        : await supabase.auth.signInWithOtp({ phone: e164, options: { channel: 'sms' } });
       if (error) setError(error.message); else setStep('code');
     } catch { setError('Unable to connect. Please try again.'); }
     finally { setBusy(false); }
@@ -52,7 +58,9 @@ export function LoginForm({ labels }: { labels: Labels }) {
     setError(null);
     setBusy(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({ phone: toE164(phone), token: asciiDigits(code).trim(), type: 'sms' });
+      const { error } = method === 'email'
+        ? await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: asciiDigits(code).trim(), type: 'email' })
+        : await supabase.auth.verifyOtp({ phone: toE164(phone), token: asciiDigits(code).trim(), type: 'sms' });
       if (error) { setError(error.message); return; }
       window.location.href = '/';
     } catch { setError('Unable to connect. Please try again.'); }
@@ -62,17 +70,23 @@ export function LoginForm({ labels }: { labels: Labels }) {
   if (step === 'phone') {
     return (
       <form onSubmit={sendCode} className="space-y-4">
+        <div className="grid grid-cols-2 gap-2 rounded-xl bg-cream-deep p-1">
+          <button type="button" className={method === 'phone' ? 'rounded-lg bg-white p-2 text-sm font-medium shadow-sm' : 'p-2 text-sm text-ink-muted'} onClick={() => { setMethod('phone'); setError(null); }}>Phone</button>
+          <button type="button" className={method === 'email' ? 'rounded-lg bg-white p-2 text-sm font-medium shadow-sm' : 'p-2 text-sm text-ink-muted'} onClick={() => { setMethod('email'); setError(null); }}>Email</button>
+        </div>
+        {method === 'email' && <p className="text-[12px] text-ink-muted">Email login is for addresses already verified on an existing Brewistan account.</p>}
         <div>
-          <label className="label" htmlFor="phone">{labels.phone}</label>
+          <label className="label" htmlFor="phone">{method === 'email' ? 'Email address' : labels.phone}</label>
           <input
             id="phone"
+            type={method === 'email' ? 'email' : 'tel'}
             className="input"
             dir="ltr"
-            inputMode="tel"
-            autoComplete="tel"
-            placeholder="0770 123 4567"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            inputMode={method === 'email' ? 'email' : 'tel'}
+            autoComplete={method === 'email' ? 'email' : 'tel'}
+            placeholder={method === 'email' ? 'you@example.com' : '0770 123 4567'}
+            value={method === 'email' ? email : phone}
+            onChange={(e) => method === 'email' ? setEmail(e.target.value) : setPhone(e.target.value)}
             required
           />
         </div>
@@ -102,7 +116,7 @@ export function LoginForm({ labels }: { labels: Labels }) {
       {error && <p role="alert" className="text-sm text-bad">{error}</p>}
       <button className="btn-primary w-full" disabled={busy || code.length !== 6}>{busy ? '…' : labels.verify}</button>
       <button type="button" disabled={busy} className="w-full text-sm text-ink-muted underline" onClick={() => { setStep('phone'); setCode(''); }}>
-        {labels.change}
+        {method === 'email' ? 'Change email' : labels.change}
       </button>
     </form>
   );

@@ -2,6 +2,8 @@
 // Must match supabase/functions/_shared/crypto.ts and device-proof.ts exactly;
 // supabase/functions/_tests/web_protocol_test.ts checks this against the server code.
 
+import { asciiDigits } from '@/lib/validation';
+
 export const QR_WINDOW_SECONDS = 30;
 
 export function b64urlEncode(bytes: Uint8Array): string {
@@ -60,7 +62,7 @@ export function sessionIdFromAccessToken(token: string): string | null {
 
 /** Iraqi numbers by default: 0750 123 4567, 750 123 4567, +964 750..., 00964 750... -> +9647501234567. */
 export function toE164(input: string): string | null {
-  let d = input.replace(/[^\d+]/g, '');
+  let d = asciiDigits(input).replace(/[^\d+]/g, '');
   if (d.startsWith('00')) d = '+' + d.slice(2);
   if (d.startsWith('+')) return /^\+[1-9]\d{7,14}$/.test(d) ? d : null;
   if (d.startsWith('0')) d = d.slice(1);

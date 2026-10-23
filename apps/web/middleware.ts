@@ -10,9 +10,9 @@ export async function middleware(request: NextRequest) {
   const url = request.nextUrl.clone();
   const host = (request.headers.get('host') ?? '').split(':')[0];
 
-  // Customer app (brewistan.com/c/..., /cards, /scan). Customers stay signed in through their own
+  // Customer app (app.brewistan.com/c/..., /cards, /scan). Customers stay signed in through their own
   // browser session and never use the café-owner session rules below.
-  const customerHosts = (process.env.CUSTOMER_HOSTS ?? 'brewistan.com,www.brewistan.com').split(',').map((h) => h.trim());
+  const customerHosts = (process.env.CUSTOMER_HOSTS ?? 'app.brewistan.com').split(',').map((h) => h.trim());
   if (customerHosts.includes(host) && url.pathname === '/') {
     url.pathname = '/cards';
     return NextResponse.redirect(url);

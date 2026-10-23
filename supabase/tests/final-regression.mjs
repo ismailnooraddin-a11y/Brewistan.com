@@ -192,4 +192,18 @@ export async function finalRegression(db,ids){
  assert.equal((await one('select public.my_staff_cafes() s')).s.length,0);
  await db.exec('reset role');await as(null);
  console.log('final: customer web app (slugs, QR page, registration, join without stamp, scanner list)');
+
+ // Branch reporting: one shared card, but every stamp is attributed to its branch.
+ const ownerNow=(await one('select owner_id from public.cafes where id=$1',[ids.cafe])).owner_id;
+ await as(ownerNow);await db.exec('set role authenticated');
+ const summary=(await db.query('select * from public.owner_branch_summary($1, 30)',[ids.cafe])).rows;
+ const second=summary.find(r=>r.branch_name==='Second branch');
+ assert.ok(second,'every branch is listed');
+ assert.ok(second.stamps>=1,'stamps are counted at the branch where they were given');
+ const recent=(await db.query('select * from public.owner_recent_stamps($1, 10)',[ids.cafe])).rows;
+ assert.ok(recent.length>0 && recent.every(r=>typeof r.branch_name==='string'));
+ await db.exec('reset role');await as(newCustomer);await db.exec('set role authenticated');
+ await assert.rejects(db.query('select * from public.owner_recent_stamps($1, 10)',[ids.cafe]),/not_owner/);
+ await db.exec('reset role');await as(null);
+ console.log('final: owners see stamps per branch; customers cannot read branch reports');
 }

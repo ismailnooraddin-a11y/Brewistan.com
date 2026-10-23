@@ -47,9 +47,9 @@ class WalletScreen extends StatelessWidget {
             )
           else
             ...wallet.cards.map((card) => Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.only(bottom: 11),
                   child: LoyaltyCard(
-                    card: card, now: state.time.now(),
+                    card: card, now: state.time.now(), compact: true,
                     customerTier: tier,
                     tierLabel: state.t('tier.$tier'),
                     rewardText: '${state.t('wallet.reward')} · ${card.label(state.lang,at:state.time.now())}',

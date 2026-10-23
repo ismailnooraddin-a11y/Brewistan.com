@@ -92,7 +92,13 @@ class LocalDb {
     final rows = await _db.query('kv', where: 'key = ?', whereArgs: [key], limit: 1);
     if (rows.isEmpty) return null;
     final value = rows.first['value'] as String;
-    return _sensitiveKey(key) ? await _cipher.open(value, 'kv:$key') : value;
+    if (!_sensitiveKey(key)) return value;
+    try { return await _cipher.open(value, 'kv:$key'); }
+    catch (_) {
+      // Disposable cached wallet/snapshot may be re-fetched. Preserve bytes
+      // for support instead of failing every app startup or deleting the queue.
+      return null;
+    }
   }
   Future<void> kvSet(String key, String? value) async {
     if (value == null) { await _db.delete('kv', where: 'key = ?', whereArgs: [key]); }
@@ -117,7 +123,15 @@ class LocalDb {
         if (last != null && at - last < cooldownMs) throw StateError('cooldown');
       } else {
         if (rewardId == null) throw StateError('voucher_required');
-        if ((await tx.query('used_vouchers', where: 'reward_id = ?', whereArgs: [rewardId])).isNotEmpty) throw StateError('reward_redeemed');
+        final used = await tx.query('used_vouchers', where: 'reward_id = ?', whereArgs: [rewardId]);
+        if (used.isNotEmpty) {
+          if (offline) throw StateError('reward_redeemed');
+          final pending = await tx.query('queue', where: 'reward_id = ?', whereArgs: [rewardId], limit: 1);
+          if (pending.isNotEmpty) throw StateError('reward_pending');
+          // Online redemption is authoritative. A previously completed reward
+          // may have been restored by an owner; allow the server to validate it.
+          await tx.delete('used_vouchers', where: 'reward_id = ?', whereArgs: [rewardId]);
+        }
         final count = Sqflite.firstIntValue(await tx.rawQuery('SELECT COUNT(*) FROM used_vouchers WHERE used_at >= ? AND offline = 1 AND (scanner_device_id = ? OR scanner_device_id IS NULL)', [dayStartMs, scannerDeviceId])) ?? 0;
         if (offline && count >= 2) throw StateError('offline_cap');
       }
@@ -148,10 +162,22 @@ class LocalDb {
     final result = <Map<String, Object?>>[];
     for (final row in rows) {
       final decoded = Map<String, Object?>.from(row);
-      for (final column in ['qr', 'snapshot']) {
-        decoded[column] = await _cipher.open(row[column] as String, _queueContext(row, column));
+      try {
+        for (final column in ['qr', 'snapshot']) {
+          decoded[column] = await _cipher.open(row[column] as String, _queueContext(row, column));
+        }
+        result.add(decoded);
+      } catch (_) {
+        // Keep encrypted payload for manual recovery, but quarantine this row
+        // so subsequent valid events can sync on the next pass.
+        await _db.update('queue', {'available_at': 9999999999999},
+          where: 'event_id = ? AND staff_id = ?', whereArgs: [row['event_id'], staffId]);
+        await _db.insert('sync_results', {
+          'event_id': row['event_id'], 'staff_id': staffId, 'type': row['type'],
+          'status': 'quarantined', 'reason': 'local_payload_unreadable',
+          'completed_at': DateTime.now().millisecondsSinceEpoch,
+        }, conflictAlgorithm: ConflictAlgorithm.replace);
       }
-      result.add(decoded);
     }
     return result;
   }

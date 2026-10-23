@@ -1,3 +1,13 @@
+## 2026-10-23 — Compact premium PWA and reliability repair (source candidate)
+
+- Compact luxury loyalty cards for Classic, Signature, and Bespoke; full card and rotating QR on the detailed view. Native wallet gets a compact list treatment.
+- Adds optional verified-email OTP to customer and owner login; verified email can be linked to an existing account, while phone signup remains the initial path.
+- Introduces a built-in PWA café QR reader, complete paginated card wallet, active card refresh, QR certificate renewal fallback and account-scoped profile display cache.
+- Fixes owner café-switching editor state, barista retry IDs, multi-step setup atomicity, elevated-RPC session guards, long slug names and historical offline campaign selection.
+- Addresses several reporting, login provider timeout, notification maintenance and native storage resilience issues; adds database regression scenarios.
+- 57 source/fixture tests passed, plus strict checking of 8 dependency-free TypeScript modules; full web/Flutter build, new PGlite migrations, hosted providers, and real devices still require CI and staging. **Not an Apple Wallet/Google Wallet pass implementation.**
+- Review [UPDATE_2026-10-23.md](UPDATE_2026-10-23.md) before production deployment.
+
 # Changelog
 
 ## 1.0.1 - final follow-up source revision - 2026-10-16

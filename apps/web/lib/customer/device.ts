@@ -38,9 +38,29 @@ export function serverNow(): number {
 /** Registers this browser for the signed-in customer when needed. Safe to call often. */
 export async function ensureDevice(userId: string, locale: string): Promise<void> {
   let state = load() ?? await freshKeys();
-  const valid = state.userId === userId && state.cert && state.certExpiresAt &&
-    Date.parse(state.certExpiresAt) - Date.now() > 3 * 86_400_000;
-  if (valid) return;
+  const remaining = state.userId === userId && state.cert && state.certExpiresAt
+    ? Date.parse(state.certExpiresAt) - serverNow() : 0;
+  // A current signed certificate must work offline, including during the
+  // optional early renewal window. Never wait for the network to display it.
+  if (remaining > 60_000) {
+    if (remaining < 3 * 86_400_000 && navigator.onLine) {
+      // Renewal failure must not prevent this session from using the existing QR.
+      void refreshDevice(userId, locale).catch(() => {});
+    }
+    return;
+  }
+  await refreshDevice(userId, locale);
+}
+
+let renewing: Promise<void> | null = null;
+function refreshDevice(userId: string, locale: string): Promise<void> {
+  if (renewing) return renewing;
+  renewing = registerDevice(userId, locale).finally(() => { renewing = null; });
+  return renewing;
+}
+
+async function registerDevice(userId: string, locale: string): Promise<void> {
+  let state = load() ?? await freshKeys();
 
   for (let attempt = 0; attempt < 2; attempt++) {
     const { data: { session } } = await customerClient().auth.getSession();
@@ -68,11 +88,11 @@ export async function ensureDevice(userId: string, locale: string): Promise<void
 }
 
 /** The QR the barista scans. Changes every 30 seconds. */
-export async function currentQr(): Promise<string | null> {
+export async function currentQr(voucher = '0'): Promise<string | null> {
   const state = load();
-  if (!state?.cert) return null;
+  if (!state?.cert || !state.certExpiresAt || Date.parse(state.certExpiresAt) <= serverNow()) return null;
   const seed = b64urlDecode(state.seed);
-  return buildCustomerQr(state.cert, serverNow(), (m) => signAsync(m, seed));
+  return buildCustomerQr(state.cert, serverNow(), (m) => signAsync(m, seed), voucher);
 }
 
 export function forgetDevice() {

@@ -20,7 +20,7 @@ export default async function VerificationPage() {
               <li>Take a live photo at your cafe that shows the cafe sign and the code together.</li>
               <li>Upload it here. Make sure your Instagram link is correct: <span dir="ltr" className="text-ink-muted">{cafe.instagram_url ?? 'not set'}</span></li>
             </ol>
-            <VerificationUpload cafeId={cafe.id} hasPhoto={!!cafe.verification_photo_path} />
+            <VerificationUpload key={cafe.id} cafeId={cafe.id} hasPhoto={!!cafe.verification_photo_path} />
           </div>
         )}
       </div>

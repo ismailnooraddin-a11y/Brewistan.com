@@ -1,14 +1,14 @@
 # Brewistan
 
-Digital loyalty platform for luxury cafes in Iraq: one Flutter app for customers and baristas, a web dashboard for cafe owners at `dashboard.brewistan.com`, an admin panel at `admin.brewistan.com`, and a Supabase backend.
+Digital loyalty platform for luxury cafes in Iraq: one Flutter app for customers and baristas, a Next.js customer PWA at `app.brewistan.com`, a web dashboard for cafe owners at `dashboard.brewistan.com`, an admin panel at `admin.brewistan.com`, and a Supabase backend.
 
-> **Final revised source, version 1.0.1.** Start with [START_HERE.md](START_HERE.md), [the final audit](AUDIT_REPORT.md), [current test evidence](docs/final/TEST_RESULTS.md), and [the upgrade runbook](docs/UPGRADE.md). This complete bundle contains twelve ordered migrations. It is not a signed binary or production certification; full-stack tests and staging acceptance remain required.
+> **2026-10-23 updated source candidate (not certified production-ready).** Start with [the current update notes](UPDATE_2026-10-23.md), then [START_HERE.md](START_HERE.md), [the final audit](AUDIT_REPORT.md), [current test evidence](docs/final/TEST_RESULTS.md), and [the upgrade runbook](docs/UPGRADE.md). This complete bundle contains nineteen ordered migrations (17 originally delivered plus two new). It is not a signed binary or production certification; full-stack tests and staging acceptance remain required.
 
 ## What is in the repo
 
 ```
 apps/mobile/        Flutter app (customer wallet + barista scanner, English/Arabic/Sorani)
-apps/web/           Next.js owner dashboard + admin panel (one deployment, two hostnames)
+apps/web/           Next.js customer PWA + owner dashboard + admin (one deployment, three hostnames)
 supabase/
   migrations/       Database schema, Row Level Security, stamp and reward logic
   functions/        Edge Functions (WhatsApp OTP hook, scanning, sync, push, admin)
@@ -20,7 +20,7 @@ docs/               Upgrade runbook, test evidence, audit HTML and WhatsApp temp
 
 ## How it works
 
-- **Sign-in:** WhatsApp OTP on first sign-in per install (all roles). Mobile sessions persist in the Keychain/Keystore with rotating refresh tokens, but logout, revocation and expired authentication are handled explicitly. Owners re-enter a code on the web after 2 hours idle or 12 hours total. Admins also need an authenticator app (MFA).
+- **Sign-in:** Phone OTP through WhatsApp/SMS; verified existing accounts can also sign in by email OTP when Supabase email Auth is configured. No passwords. Phone remains required at initial owner/customer registration. Mobile sessions persist in the Keychain/Keystore with rotating refresh tokens, but logout, revocation and expired authentication are handled explicitly. Owners re-enter a code on the web after 2 hours idle or 12 hours total. Admins also need an authenticator app (MFA).
 - **Customer code:** each install creates an Ed25519 key. The server issues a 30-day device certificate. The QR is `BW1~cert~window~voucher~signature`, re-signed every 30 seconds on the phone, fully offline. Scanners verify it offline with the platform public key, so they never hold a secret that could forge codes. Android blocks screenshots of the app.
 - **Stamps:** one scan = one stamp, 2-hour cooldown per cafe, max 2 unclaimed rewards, versioned reward rules. Stamps use durable client event UUIDs and server-side idempotency. Offline work stays pending until the server accepts it.
 - **Redemption:** the scanner asks "Redeem Free Coffee?" before stamping. Offline redemption only works with a server-signed voucher already on the customer's phone, capped centrally at 2 accepted offline redemptions per scanner device per Baghdad day. Reconciliation can reject provisional work, and the scanner retains the reason.
@@ -43,7 +43,7 @@ Keep the output private. `PLATFORM_PUBLIC_KEY` goes into the app; everything els
 2. Note the **project ref**, **database password**, **URL** and **anon key**; create a **personal access token** (Account > Access tokens).
 3. Authentication > Providers > **Phone**: enable, and explicitly require phone confirmation on the hosted project. Authentication > Hooks > **Send SMS hook** (HTTPS): URL `https://<ref>.supabase.co/functions/v1/auth-send-otp`, then generate the secret and save it as `SEND_SMS_HOOK_SECRET`.
 4. Authentication > Multi-factor: enable **TOTP**.
-5. Authentication > URL configuration: Site URL `https://dashboard.brewistan.com`, add `https://admin.brewistan.com`.
+5. Authentication > URL configuration: Site URL `https://dashboard.brewistan.com`, add `https://admin.brewistan.com`, `https://app.brewistan.com` and the corresponding auth callback paths. For optional email OTP: enable Email Auth, require address confirmation, configure a delivery provider, and put `{{ .Token }}` in the Magic Link email template to send a code instead of only a login link. Validate linking, verification and existing-account-only login in staging.
 
 ### 3. Meta WhatsApp
 1. Verify your business in Meta Business Manager and add a WhatsApp Business phone number.

@@ -76,7 +76,7 @@ export default async function PushPage({ searchParams }: { searchParams: Promise
       </div>
       {cafe.status !== 'active'
         ? <Notice tone="warn">Campaigns are available once your cafe is approved.</Notice>
-        : <PushComposer cafeId={cafe.id} campaigns={(campaigns ?? []).slice(0, PAGE_SIZE)} />}
+        : <PushComposer key={cafe.id} cafeId={cafe.id} campaigns={(campaigns ?? []).slice(0, PAGE_SIZE)} />}
       <Pagination path="/dashboard/push" page={page} hasMore={(campaigns?.length ?? 0) > PAGE_SIZE} />
     </>
   );
