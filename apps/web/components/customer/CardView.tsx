@@ -5,6 +5,7 @@ import QRCode from 'qrcode';
 import { CafeCardPreview } from '@/components/CafeCardPreview';
 import { cardLook } from '@/lib/customer/look';
 import { pickLabel } from '@/lib/customer/strings';
+import { isNanaSceneCafe, shouldShowNanaScene } from '@/lib/customer/nana-scene';
 import { cachedWallet, fetchWallet, type Wallet } from '@/lib/customer/wallet';
 import { currentQr, ensureDevice, serverNow } from '@/lib/customer/device';
 import { useCustomerText } from './CustomerProvider';
@@ -23,6 +24,7 @@ export function CardView({ cafeId }: { cafeId: string }) {
   const [qrImage, setQrImage] = useState<string | null>(null);
   const [qrError, setQrError] = useState(false);
   const [clock, setClock] = useState(Date.now());
+  const [scenePreview, setScenePreview] = useState(false);
 
   const reload = useCallback(async (uid: string) => {
     try { setWallet(await fetchWallet(uid)); setOffline(false); }
@@ -57,6 +59,8 @@ export function CardView({ cafeId }: { cafeId: string }) {
   const card = wallet?.cards.find((c) => c.cafeId === cafeId && !c.archived);
   const earned = card?.rewards.find((r) => Date.parse(r.expiresAt) > clock);
   const voucher = earned?.voucher || '0';
+  const nanaScene = !!card && shouldShowNanaScene(card.cafeId, card.tier, scenePreview);
+  const showTestSwitch = !!card && isNanaSceneCafe(card.cafeId) && card.tier === 'signature';
 
   // QR belongs to this user/cafe/reward. A failed redraw must never display a
   // previous voucher or an expired certificate as though it were current.
@@ -88,7 +92,10 @@ export function CardView({ cafeId }: { cafeId: string }) {
   const reward = pickLabel(label, lang);
 
   return (
-    <main className="mx-auto w-full max-w-md px-5 pb-16" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}>
+    <div className={nanaScene ? 'nana-scene-shell' : undefined}>
+      {nanaScene && <div className="nana-scene-background" aria-hidden="true" />}
+      <main className={`mx-auto w-full max-w-md px-5 pb-16 ${nanaScene ? 'nana-scene-foreground' : ''}`}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}>
       <BrandBar right={<Link href="/cards" className="cx-link text-[13px]">{t('myCards')}</Link>} />
       {customer.status === 'loading' && <div className="mt-16"><Spinner label="…" /></div>}
       {customer.status === 'signedOut' && <section className="cx-surface mt-8 p-5"><PhoneAuth onSignedIn={customer.refresh} /></section>}
@@ -96,25 +103,44 @@ export function CardView({ cafeId }: { cafeId: string }) {
       {customer.status === 'signedIn' && !card && !resolved && <div className="mt-16"><Spinner label={t('openingCard')} /></div>}
       {customer.status === 'signedIn' && !card && resolved && <section className="cx-surface mt-8 p-5 text-center text-sm cx-muted">{offline ? t('offline') : t('noCardsBody')} <button className="cx-link ms-2" onClick={() => customer.user && reload(customer.user.id)}>Retry</button></section>}
       {customer.status === 'signedIn' && card && (
-        <CardDisplay name={card.name} logo={card.tier === 'classic' ? null : card.logoUrl} look={cardLook(card.tier, card.brand, tier)}
-          filled={card.stampsInCurrent} total={card.stampsRequired} reward={reward}
-          rewardReady={!!earned} qrImage={qrImage} qrError={qrError} offline={offline} />
+        <>
+          {showTestSwitch && (
+            <div className={`mt-5 flex items-center justify-between gap-3 rounded-2xl border px-3.5 py-3 ${nanaScene
+              ? 'border-[#e8d6b0]/35 bg-[#1e1a18]/80 text-[#f6e9d3]'
+              : 'border-[#c6aa74]/25 bg-[#201d19] text-[#e6d3ac]'}`}>
+              <div className="min-w-0">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.15em]">Nana’s Tea · Design preview</div>
+                <div className="mt-0.5 text-[11px] opacity-75">Temporary Bespoke scene test</div>
+              </div>
+              <button type="button" aria-pressed={scenePreview} onClick={() => setScenePreview((v) => !v)}
+                className="shrink-0 rounded-full border border-[#d3b982]/40 px-3 py-1.5 text-[12px] font-semibold text-[#f6e5c1] focus-visible:outline-offset-2">
+                {scenePreview ? 'Standard card' : 'Preview scene'}
+              </button>
+            </div>
+          )}
+          <CardDisplay name={card.name} logo={card.tier === 'classic' ? null : card.logoUrl} look={cardLook(card.tier, card.brand, tier)}
+            filled={card.stampsInCurrent} total={card.stampsRequired} reward={reward}
+            rewardReady={!!earned} qrImage={qrImage} qrError={qrError} offline={offline} sceneActive={nanaScene} />
+        </>
       )}
-    </main>
+      </main>
+    </div>
   );
 }
 
 /** The full PWA card and its independently scannable, rotating customer QR. */
-export function CardDisplay({ name, logo, look, filled, total, reward, rewardReady, qrImage, qrError, offline }: {
+export function CardDisplay({ name, logo, look, filled, total, reward, rewardReady, qrImage, qrError, offline, sceneActive = false }: {
   name: string; logo: string | null; look: { bg: string; fg: string; tag: string }; filled: number; total: number;
-  reward: string; rewardReady: boolean; qrImage: string | null; qrError: boolean; offline: boolean;
+  reward: string; rewardReady: boolean; qrImage: string | null; qrError: boolean; offline: boolean; sceneActive?: boolean;
 }) {
   const { t } = useCustomerText();
   const left = Math.max(0, total - filled);
   return (
     <div className="mt-6 space-y-4">
-      <CafeCardPreview name={name} bg={look.bg} fg={look.fg} logoUrl={logo} filled={filled} total={total} goal={reward} tag={look.tag}
-        footer={rewardReady ? t('rewardReady', { reward }) : t('moreFor', { n: left, reward })} />
+      <div className={sceneActive ? 'nana-scene-card' : undefined}>
+        <CafeCardPreview name={name} bg={look.bg} fg={look.fg} logoUrl={logo} filled={filled} total={total} goal={reward} tag={look.tag}
+          footer={rewardReady ? t('rewardReady', { reward }) : t('moreFor', { n: left, reward })} />
+      </div>
       {offline && <p className="text-center text-[13px] text-[#d9b56f]">{t('offline')}</p>}
       {rewardReady && (
         <div className="rounded-2xl border border-[#c8a96a]/30 bg-[#c8a96a]/[0.07] px-4 py-3 text-center">
