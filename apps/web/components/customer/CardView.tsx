@@ -1,4 +1,6 @@
 'use client';
+import { CustomerCardPage } from './CustomerCardPage';
+
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import QRCode from 'qrcode';
@@ -91,41 +93,9 @@ export function CardView({ cafeId }: { cafeId: string }) {
   const label = useMemo(() => earned?.rewardLabel ?? card?.rewardLabel ?? null, [earned?.rewardLabel, card?.rewardLabel]);
   const reward = pickLabel(label, lang);
 
-  return (
-    <div className={nanaScene ? 'nana-scene-shell' : undefined}>
-      {nanaScene && <div className="nana-scene-background" aria-hidden="true" />}
-      <main className={`mx-auto w-full max-w-md px-5 pb-16 ${nanaScene ? 'nana-scene-foreground' : ''}`}
-        style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}>
-      <BrandBar right={<Link href="/cards" className="cx-link text-[13px]">{t('myCards')}</Link>} />
-      {customer.status === 'loading' && <div className="mt-16"><Spinner label="…" /></div>}
-      {customer.status === 'signedOut' && <section className="cx-surface mt-8 p-5"><PhoneAuth onSignedIn={customer.refresh} /></section>}
-      {customer.status === 'signedIn' && customer.profileComplete === null && <section className="cx-surface mt-8 p-5 text-sm cx-muted">Can’t check your account right now. <button className="cx-link" onClick={customer.refresh}>Retry</button></section>}
-      {customer.status === 'signedIn' && !card && !resolved && <div className="mt-16"><Spinner label={t('openingCard')} /></div>}
-      {customer.status === 'signedIn' && !card && resolved && <section className="cx-surface mt-8 p-5 text-center text-sm cx-muted">{offline ? t('offline') : t('noCardsBody')} <button className="cx-link ms-2" onClick={() => customer.user && reload(customer.user.id)}>Retry</button></section>}
-      {customer.status === 'signedIn' && card && (
-        <>
-          {showTestSwitch && (
-            <div className={`mt-5 flex items-center justify-between gap-3 rounded-2xl border px-3.5 py-3 ${nanaScene
-              ? 'border-[#e8d6b0]/35 bg-[#1e1a18]/80 text-[#f6e9d3]'
-              : 'border-[#c6aa74]/25 bg-[#201d19] text-[#e6d3ac]'}`}>
-              <div className="min-w-0">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.15em]">Nana’s Tea · Design preview</div>
-                <div className="mt-0.5 text-[11px] opacity-75">Temporary Bespoke scene test</div>
-              </div>
-              <button type="button" aria-pressed={scenePreview} onClick={() => setScenePreview((v) => !v)}
-                className="shrink-0 rounded-full border border-[#d3b982]/40 px-3 py-1.5 text-[12px] font-semibold text-[#f6e5c1] focus-visible:outline-offset-2">
-                {scenePreview ? 'Standard card' : 'Preview scene'}
-              </button>
-            </div>
-          )}
-          <CardDisplay name={card.name} logo={card.tier === 'classic' ? null : card.logoUrl} look={cardLook(card.tier, card.brand, tier)}
-            filled={card.stampsInCurrent} total={card.stampsRequired} reward={reward}
-            rewardReady={!!earned} qrImage={qrImage} qrError={qrError} offline={offline} sceneActive={nanaScene} />
-        </>
-      )}
-      </main>
-    </div>
-  );
+  return (<CustomerCardPage cafeId={cafeId} customer={customer} wallet={wallet}
+      qrImage={qrImage} qrError={qrError} offline={offline} resolved={resolved}
+      onRetry={() => { if (customer.user) void reload(customer.user.id); }} />);
 }
 
 /** The full PWA card and its independently scannable, rotating customer QR. */

@@ -89,8 +89,10 @@ export function BrandingForm({ cafeId, cafeName, tier, brand, logoUrl }: {
     if (!window.confirm('Publish this design? Customers will see it the next time they open the app.')) return;
     setBusy(true);
     try {
+      const { data: cardPolishCurrentCafe, error: cardPolishReadError } = await supabase.from('cafes').select('brand').eq('id', cafeId).single();
+      if (cardPolishReadError || !cardPolishCurrentCafe) throw new Error('branding_read_failed');
       const { error } = await supabase.from('cafes')
-        .update({ name: trimmedName, brand: { template, primary, accent } })
+        .update({ name: trimmedName, brand: { ...cardPolishCurrentCafe.brand, template, primary, accent } })
         .eq('id', cafeId).select('id').single();
       setMsg(error ? 'Branding could not be saved. Please retry.' : 'Published. This is now your live card.');
       router.refresh();

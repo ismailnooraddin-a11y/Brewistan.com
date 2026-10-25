@@ -1,7 +1,7 @@
 // Brewistan customer app service worker.
 // Caches only static files and customer pages (/cards, /c/..., /scan) so returning customers
 // open instantly. Café-owner and admin pages are never cached. Balances always come from the server.
-const VERSION = 'bw-customer-v1';
+const VERSION = 'bw-customer-card-polish-20261025-v1';
 const SHELL = ['/cards', '/offline.html', '/icons/icon-192.png', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
@@ -27,7 +27,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   // Static files have unique names: serve from cache, fill the cache on first use.
-  if (url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/icons/')) {
+  if (url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/icons/') || url.pathname.startsWith('/card-scenes/')) {
     event.respondWith(caches.match(request).then((hit) => hit || fetch(request).then((res) => {
       if (res.ok) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(request, copy)); }
       return res;

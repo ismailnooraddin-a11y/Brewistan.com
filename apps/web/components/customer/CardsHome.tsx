@@ -1,4 +1,6 @@
 'use client';
+import { cardCustomerName, cardLastStampAt } from '@/lib/customer/card-presentation';
+
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { CafeCardPreview } from '@/components/CafeCardPreview';
@@ -97,7 +99,7 @@ export function CardsHome() {
                   <Link href={`/cards/${c.cafeId}`} className="block rounded-[19px] transition-transform duration-150 hover:brightness-[1.04] active:scale-[0.985] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#c8a96a]">
                     <CafeCardPreview name={c.name} bg={look.bg} fg={look.fg} logoUrl={c.tier === 'classic' ? null : c.logoUrl} filled={c.stampsInCurrent}
                       total={c.stampsRequired} goal={reward} tag={look.tag}
-                      footer={ready ? t('rewardReady', { reward }) : t('moreFor', { n: left, reward })} density="compact" />
+                      footer={ready ? t('rewardReady', { reward }) : t('moreFor', { n: left, reward })} density="full"  customerName={cardCustomerName(wallet?.profile)} lastStampAt={cardLastStampAt(c)} locale={lang} stampStyle={c.tier === 'classic' ? 'cup' : c.brand?.stamp} />
                   </Link>
                 </li>
               );
